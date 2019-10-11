@@ -44,6 +44,7 @@
         <android.support.v7.widget.LinearLayoutCompat
             android:id="@+id/target_data_container"
             android:layout_width="0dp"
+            android:orientation="vertical"
             android:layout_height="match_parent"
             android:layout_weight="1">
         </android.support.v7.widget.LinearLayoutCompat>
