@@ -23,13 +23,10 @@ public class MarkDelegate extends BottomItemDelegate {
 
     @BindView(R2.id.surface_pan)
     MarkDisplay markDisplay=null;
-    @BindView(R2.id.iv_go)
-    ImageView iv_go=null;
-     @Override
+    @Override
     public Object setLayout() {
         return R.layout.delegate_mark;
     }
-
     @Override
     public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
 

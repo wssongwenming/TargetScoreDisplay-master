@@ -29,9 +29,9 @@
             android:layout_centerInParent="true"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:textSize="40sp"
-            android:textColor="@color/white"
-            android:text="请等候...."
+            android:textSize="50sp"
+            android:textColor="@color/Green"
+            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
