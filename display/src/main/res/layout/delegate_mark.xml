@@ -3,31 +3,32 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
+    android:background="@color/Gray2"
     android:orientation="vertical">
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
-        android:background="@color/Green"
+        android:background="#ececec"
         android:layout_height="40dp">
         <TextView
             android:textSize="20sp"
-            android:textColor="@color/white"
+            android:textColor="@color/light_black"
             android:text="成绩显示"
             android:paddingTop="6dp"
             android:gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
     </android.support.v7.widget.Toolbar>
 
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"
         android:baselineAligned="true">
         <FrameLayout
             android:id="@+id/target_map_container"
             android:layout_width="0dp"
-            android:background="@color/white"
+            android:background="@drawable/edittext"
             android:layout_height="match_parent"
             android:layout_weight="1.5"
            >
@@ -35,19 +36,199 @@
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"
                 android:layout_margin="20px"
-                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
                 android:id="@+id/surface_pan"
                 >
             </com.huasun.display.main.mark.view.MarkDisplay>
         </FrameLayout>
-
+        <!--基本情况-->
         <android.support.v7.widget.LinearLayoutCompat
-            android:id="@+id/target_data_container"
             android:layout_width="0dp"
+            android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_height="wrap_content">
+          <!--基本情况内容-->
+        <android.support.v7.widget.LinearLayoutCompat
+            android:id="@+id/llc_person_data"
+            android:layout_width="match_parent"
+            android:background="@drawable/edittext"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:orientation="vertical"
+            android:layout_height="wrap_content"
+           >
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal">
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="姓        名："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/edit_name"
+                        android:background="@drawable/area_bg"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+            </android.support.v7.widget.LinearLayoutCompat>
+
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal">
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="部  职  别："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/edit_department"
+                        android:background="@drawable/area_bg"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+            </android.support.v7.widget.LinearLayoutCompat>
+
+
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal">
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="2">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="射击枪械："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/edit_gun"
+                        android:textSize="22sp"
+                        android:background="@drawable/area_bg"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="子弹数量："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/edit_bullet"
+                        android:background="@drawable/area_bg"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+            </android.support.v7.widget.LinearLayoutCompat>
+
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal">
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="wrap_content"
+                         android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="靶位编号："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/area_bg"
+                        android:id="@+id/edit_target_number"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content"
+                        android:text="编组序号："
+                        />
+                    <EditText
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/area_bg"
+                        android:id="@+id/edit_group_number"
+                        android:textSize="22sp"
+                        android:layout_height="wrap_content" />
+                </android.support.v7.widget.LinearLayoutCompat>
+            </android.support.v7.widget.LinearLayoutCompat>
+        </android.support.v7.widget.LinearLayoutCompat>
+        <!--基本情况标题-->
+        <android.support.v7.widget.AppCompatTextView
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_person_data"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textColor="@color/black"
+            android:background="#ececec"
+            android:textSize="22sp"
+            android:text="基本情况"/>
         </android.support.v7.widget.LinearLayoutCompat>
 
     </android.support.v7.widget.LinearLayoutCompat>
+    <TextView
+            android:textSize="20sp"
+            android:textColor="@color/light_black"
+            android:text="2019年10月19日-某某靶场"
+            android:gravity="center"
+        android:background="#ececec"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"/>
 </android.support.v7.widget.LinearLayoutCompat>

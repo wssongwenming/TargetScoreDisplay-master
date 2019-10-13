@@ -7,6 +7,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatTextView;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import com.huasun.core.ui.launcher.OnLauncherFinishTag;
 import com.huasun.core.util.ActivityManager;
 import com.huasun.core.util.DataCleanManager;
 import com.huasun.core.util.log.LatteLogger;
+import com.huasun.display.R2;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.MarkDelegate;
 import com.huasun.display.sign.ISignListener;
@@ -33,7 +36,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 
+import butterknife.BindView;
+
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener{
+    AppCompatTextView mBasicSituation=null;
+    LinearLayoutCompat mDataContainer=null;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
     private int currentcommand=Latte.getConfiguration(ConfigKeys.COMMAND);
     private MessageConsumer mConsumer;
@@ -133,8 +140,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     public void onSignUpFailure(String msg) {
 
     }
-
-    @Override
+     @Override
     public void onLauncherFinish(OnLauncherFinishTag tag) {
         switch (tag){
             case SIGNIN_BY_PASS:

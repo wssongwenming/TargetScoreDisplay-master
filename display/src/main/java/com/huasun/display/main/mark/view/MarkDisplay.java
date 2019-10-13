@@ -42,6 +42,8 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
      */
     private boolean isRunning;
 
+    private String[] mRingNumbers = new String[]{"6", "7", "8", "9", "10", "9","8","7","6"};
+    private float[] mSpaceTimes= new float[]{0,1,2,3,4.5f,6,7,8,9};
 
     private int mRingConunt=5;
     /**
@@ -50,12 +52,14 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     private int mRadius;
 
     private Paint mRingPaint;
-
     /**
      * 绘制文字的画笔
      */
     private Paint mTextPaint;
-
+    /**
+     * 绘制10环文字的画笔
+     */
+    private Paint mTextTenPaint;
     /**
      * 控件的中心位置
      */
@@ -79,12 +83,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     private int radiusUnit;
 
     private float radiusUnitRatio=0.1f;
-    /**
-     * 控件的padding，这里我们认为4个padding的值一致，以paddingleft为标准
-     */
-    private int mPadding;
-
-    /**
+     /**
      * 背景图的bitmap
      */
     private Bitmap mBgBitmap = BitmapFactory.decodeResource(getResources(),
@@ -93,7 +92,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
      * 文字的大小
      */
     private float mTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 40, getResources().getDisplayMetrics());
 
 
     public MarkDisplay(Context context) {
@@ -127,24 +126,15 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         Log.d("width", width+"");
 
         // 获取圆形的直径
-        mRadius = width - getPaddingLeft() - getPaddingRight();
-        Log.d("paddingleft",getPaddingLeft()+"");
-        Log.d("paddingright",getPaddingRight()+"");
-        Log.d("paddingtop",getPaddingTop()+"");
-        Log.d("paddingbottom",getPaddingBottom()+"");
-        Log.d("radius", mRadius+"");
-        // padding值
-        mPadding = getPaddingLeft();
+        mRadius = width;
         // 中心点
         mCenter = width / 2;
 
-        Log.d("mCenter", mCenter+"");
         cx=mCenter;
 
         cy=(int)((0.6*mRadius)+getPaddingTop());
 
         radiusUnit=(int)(mRadius*radiusUnitRatio);
-        Log.d("unit", radiusUnit+"");
         //正方形高宽
         setMeasuredDimension(width, width);
     }
@@ -157,6 +147,15 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         mRingPaint.setStrokeWidth((float) 2.0); //线宽
         mRingPaint.setDither(true);
 
+        // 初始化绘制文字的画笔
+        mTextPaint = new Paint();
+        mTextPaint.setColor(0xFFFFFFFF);
+        mTextPaint.setTextSize(mTextSize);
+
+        // 初始化绘制文字的画笔
+        mTextTenPaint = new Paint();
+        mTextTenPaint.setColor(0xFF000000);
+        mTextTenPaint.setTextSize(mTextSize);
         // 开启线程
         isRunning = true;
         t = new Thread(this);
@@ -167,7 +166,6 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
                                int height) {
     }
-
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         // 通知关闭线程
@@ -176,7 +174,6 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
 
     @Override
     public void run() {
-
         // 不断的进行draw
         while (isRunning) {
             long start = System.currentTimeMillis();
@@ -198,26 +195,11 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         try {
             // 获得canvas
             mCanvas = mHolder.lockCanvas();
-
             if (mCanvas != null) {
                 // 绘制背景图
                 drawBg();
-                mRingPaint.setColor(0xFFFFFFFF);
-
-                for (int i = 1; i <= 5; i++) {
-                    // 绘制快快
-                    //mArcPaint.setColor(mColors[i]);
-//					mArcPaint.setStyle(Style.STROKE);
-                    mCanvas.drawCircle(cx,cy,radiusUnit*i,mRingPaint);
-                    //mCanvas.drawArc(mRange, tmpAngle, sweepAngle, true,mArcPaint);
-                    // 绘制文本
-                    //drawText(tmpAngle, sweepAngle, mStrs[i]);
-                    // 绘制Icon
-                    //drawIcon(tmpAngle, i);
-
-                    //tmpAngle += sweepAngle;
-                }
-
+                drawRings(mCanvas);
+                drawRingNumber(mCanvas);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -228,14 +210,44 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
 
     }
 
+    private void drawRingNumber(Canvas mCanvas) {
+        float n=0;
+        for(int i=0;i<mRingNumbers.length;i++){
+            String text=mRingNumbers[i];
+            float spaceTimes=mSpaceTimes[i];
+            Rect rect = new Rect();
+            mTextPaint.getTextBounds(text,0,text.length(),rect);
+            int textWidth=rect.width();
+            int textHeight=rect.height();
+            Log.d("textWidth",textWidth+"");
+            if(i==4){
+                mCanvas.drawText(text, (radiusUnit / 2 + spaceTimes * radiusUnit - textWidth / 2), cy + textHeight / 2, mTextTenPaint);
+            }else {
+                mCanvas.drawText(text, (radiusUnit / 2 + spaceTimes * radiusUnit - textWidth / 2), cy + textHeight / 2, mTextPaint);
+            }
+
+        }
+
+    }
+
+    private void drawRings(Canvas canvas) {
+        mRingPaint.setColor(0xFFFFFFFF);
+        mRingPaint.setStyle(Paint.Style.FILL);
+        mCanvas.drawCircle(cx,cy,radiusUnit*1,mRingPaint);
+        mRingPaint.setStyle(Paint.Style.STROKE);
+        for (int i = 2; i <= mRingConunt; i++) {
+            mCanvas.drawCircle(cx,cy,radiusUnit*i,mRingPaint);
+        }
+    }
+
     /**
      * 根据当前旋转的mStartAngle计算当前滚动到的区域 绘制背景，不重要，完全为了美观
      */
     private void drawBg() {
         mCanvas.drawColor(0xFFFFFFFF);
-        mCanvas.drawBitmap(mBgBitmap, null, new Rect(mPadding / 2,
-                mPadding / 2, getMeasuredWidth() - mPadding / 2,
-                getMeasuredWidth() - mPadding / 2), null);
+        mCanvas.drawBitmap(mBgBitmap, null, new Rect(0,
+                0, getMeasuredWidth(),
+                getMeasuredHeight()), null);
     }
 
 
