@@ -45,6 +45,9 @@
         <android.support.v7.widget.LinearLayoutCompat
             android:layout_width="0dp"
             android:layout_weight="1"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/edittext"
             android:orientation="vertical"
             android:layout_height="wrap_content">
           <!--基本情况内容-->
@@ -53,8 +56,8 @@
             android:layout_width="match_parent"
             android:background="@drawable/edittext"
             android:layout_marginTop="20dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+
+
             android:orientation="vertical"
             android:layout_height="wrap_content"
            >
@@ -63,14 +66,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
                 android:orientation="horizontal">
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent">
                     <TextView
                         android:layout_width="wrap_content"
-                        android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="姓        名："
@@ -97,7 +99,7 @@
                     android:layout_width="match_parent">
                     <TextView
                         android:layout_width="wrap_content"
-                        android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="部  职  别："
@@ -126,7 +128,7 @@
                     android:layout_weight="2">
                     <TextView
                         android:layout_width="wrap_content"
-                        android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="射击枪械："
@@ -145,7 +147,7 @@
                     android:layout_weight="1">
                     <TextView
                         android:layout_width="wrap_content"
-                        android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="子弹数量："
@@ -174,7 +176,7 @@
                     android:layout_weight="1">
                     <TextView
                         android:layout_width="wrap_content"
-                         android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="靶位编号："
@@ -193,7 +195,7 @@
                     android:layout_weight="1">
                     <TextView
                         android:layout_width="wrap_content"
-                        android:textStyle="bold"
+                        android:textColor="@color/black"
                         android:textSize="22sp"
                         android:layout_height="wrap_content"
                         android:text="编组序号："
@@ -208,21 +210,39 @@
                 </android.support.v7.widget.LinearLayoutCompat>
             </android.support.v7.widget.LinearLayoutCompat>
         </android.support.v7.widget.LinearLayoutCompat>
-        <!--基本情况标题-->
+        <!--recyclerview位置-->
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="20px"
+            android:layout_marginBottom="2dp"
+            android:layout_marginRight="2dp"
+            android:id="@+id/srl_mark"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+             <android.support.v7.widget.RecyclerView
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#ececec"
+              android:id="@+id/rv_mark"/>
+        </android.support.v4.widget.SwipeRefreshLayout>
         <android.support.v7.widget.AppCompatTextView
             android:layout_height="wrap_content"
             android:id="@+id/tv_person_data"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="10dp"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
             android:textColor="@color/black"
             android:background="#ececec"
             android:textSize="22sp"
             android:text="基本情况"/>
-        </android.support.v7.widget.LinearLayoutCompat>
+
 
     </android.support.v7.widget.LinearLayoutCompat>
+
+
+    </android.support.v7.widget.LinearLayoutCompat>
+
     <TextView
             android:textSize="20sp"
             android:textColor="@color/light_black"

@@ -8,25 +8,20 @@ import com.rabbitmq.client.QueueingConsumer;
 import java.io.IOException;
 
 /**
-*Consumes messages from a RabbitMQ broker
-*
+*工作流程:在需要监听的地方实例化MessageConsumer，然后连接,
 */
 public class MessageConsumer extends  IConnectToRabbitMQ{
 
   public MessageConsumer(String server, String exchange, String exchangeType,int port,String username,String password) {
       super(server, exchange, exchangeType, port,username,password);
   }
-
   //The Queue name for this consumer
   private String mQueue;
   private QueueingConsumer MySubscription;
-
   //last message to post back
   private byte[] mLastMessage;
-
   // An interface to be implemented by an object that is interested in messages(listener)
   public interface OnReceiveMessageHandler{
-	  
       public void onReceiveMessage(byte[] message);
   };
 
@@ -61,8 +56,8 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
   /**
    * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
    */
-  @Override
-  public boolean connectToRabbitMQ()
+
+  public boolean connectToCommandRabbitMQ()
   {
      if(super.connectToRabbitMQ())
      {
@@ -82,7 +77,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
                  AddBinding("signinway.*");//fanout has default binding
 
           Running = true;
-          mConsumeHandler.post(mConsumeRunner);
+          mConsumeHandler.post(mConsumeRunner);//在一个新的线程里开启消息阻塞获取模式
          return true;
      }
      return false;
@@ -124,9 +119,9 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
                while(Running){
                   QueueingConsumer.Delivery delivery;
                   try {
-                      delivery = MySubscription.nextDelivery();
+                      delivery = MySubscription.nextDelivery();//DG当前线程被阻塞，直到有消息来到
                       mLastMessage = delivery.getBody();
-                      mMessageHandler.post(mReturnMessage);
+                      mMessageHandler.post(mReturnMessage);//通过handler将消息处理线程抛回主线程
                       try {
                           mModel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                       } catch (IOException e) {

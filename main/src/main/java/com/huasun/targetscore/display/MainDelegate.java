@@ -3,12 +3,19 @@ package com.huasun.targetscore.display;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.Toast;
 
 import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.net.RestClient;
 import com.huasun.core.net.callback.IError;
 import com.huasun.core.net.callback.IFailure;
 import com.huasun.core.net.callback.ISuccess;
+import com.huasun.display.main.mark.MarkDataConverter;
+import com.huasun.display.recycler.DataConverter;
+import com.huasun.display.recycler.MultipleFields;
+import com.huasun.display.recycler.MultipleItemEntity;
+
+import java.util.ArrayList;
 
 /**
  * author:songwenming
@@ -27,13 +34,16 @@ public class MainDelegate extends LatteDelegate{
     }
     private void testRestClient(){
         RestClient.builder()
-                .url("http://www.baidu.com")
+                .url("index")
                 .loader(getContext())
                 .success(new ISuccess() {
                     @Override
                     public void onSuccess(String response) {
-
-                        //Toast.makeText(getContext(),response,Toast.LENGTH_LONG).show();
+                        final MarkDataConverter converter=new MarkDataConverter();
+                        converter.setJsonData(response);
+                        final ArrayList<MultipleItemEntity> list=converter.convert();
+                        final String offsetDirection=list.get(0).getField(MultipleFields.OFFSETDIRECTION);
+                        Toast.makeText(getContext(),offsetDirection, Toast.LENGTH_LONG).show();
 
                     }
                 })

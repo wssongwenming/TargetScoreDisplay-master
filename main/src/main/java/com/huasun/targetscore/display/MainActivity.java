@@ -25,6 +25,7 @@ import com.huasun.core.util.log.LatteLogger;
 import com.huasun.display.R2;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.MarkDelegate;
+import com.huasun.display.main.mark.MarkDelegate1;
 import com.huasun.display.sign.ISignListener;
 import com.huasun.display.sign.SignInBottomDelegate;
 import com.huasun.display.sign.SignInByFace.SignByFaceRecDelegate;
@@ -45,7 +46,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     private int currentcommand=Latte.getConfiguration(ConfigKeys.COMMAND);
     private MessageConsumer mConsumer;
     private String server="192.168.1.3";
-    private String queue_name = "signin-queue";
+    //private String queue_name = "signin-queue";
     private String exchange_name = "bcsb-exchange";
     private String exchange_type="topic";
     private int port=5672;
@@ -71,6 +72,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                 try {
                     ByteArrayInputStream bis = new ByteArrayInputStream (message);
                     ObjectInputStream ois = new ObjectInputStream (bis);
+                    Object object=ois.readObject();
                     command = (Command) ois.readObject();
                     ois.close();
                     bis.close();
@@ -86,13 +88,13 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                         Latte.getConfigurator().withCommand(newcommand);
                         //根据获得的命令显示或隐藏对应的Fragment
                         signInBottomDelegate.showHideFragment(signInBottomDelegate.getITEM_DELEGATES().get(newcommand), signInBottomDelegate.getITEM_DELEGATES().get(currentcommand));
-                        currentcommand = newcommand;
+                        currentcommand = newcommand;//currentcomman相当于index
                     }
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } catch (ClassNotFoundException e) {
+     } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
@@ -104,6 +106,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         //this.signInBottomDelegate=new SignInBottomDelegate();
         //return this.signInBottomDelegate;
         return new MarkDelegate();
+        //return new MainDelegate();
         //刚开始为等待下命令状态
 
         //return SignInBottomDelegate.newInstance(Command.waiting.getIndex());
@@ -117,7 +120,6 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
 
     @Override
     public void onSignUpSuccess() {
-        LatteLogger.e("denglu"," dengluchengong");
         Toast.makeText(this,"登陆成功",Toast.LENGTH_LONG).show();
     }
 
@@ -168,7 +170,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         protected Void doInBackground(String... Message) {
             try {
                 // Connect to broker
-                mConsumer.connectToRabbitMQ();
+                mConsumer.connectToCommandRabbitMQ();
             } catch (Exception e) {
                 // TODO: handle exception
                 e.printStackTrace();
@@ -191,52 +193,3 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     }
 
 }
-/*
-public class MainActivity extends AppCompatActivity {
-    ConnectionFactory factory = new ConnectionFactory();
-    Thread subscribeThread;
-    private MessageConsumer mConsumer;
-    private String server="192.168.1.3";
-    private String queue_name = "signin-queue";
-    private String exchange_name = "bcsb-exchange";
-    private String exchange_type="topic";
-    private int port=5672;
-    private String username="client";
-    private String password="client";
-    private String message = "";
-    private String name = "";
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
-        new consumerconnect().execute();
-        mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
-
-            public void onReceiveMessage(byte[] message) {
-                Toast.makeText(Latte.getApplicationContext(),message.toString(),Toast.LENGTH_LONG).show();
-                TextView tv = (TextView) findViewById(R.id.textview);
-                Date now = new Date();
-                SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss");
-                tv.append(ft.format(now) + ' ' + message.toString() + '\n');
-            }
-        });
-    }
-    //消息队列相关函数
-    private  class consumerconnect extends AsyncTask<String, Void, Void> {
-        @Override
-        protected Void doInBackground(String... Message) {
-            try {
-                // Connect to broker
-                mConsumer.connectToRabbitMQ();
-            } catch (Exception e) {
-                // TODO: handle exception
-                e.printStackTrace();
-            }
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-    }
-}*/
