@@ -13,24 +13,23 @@ import org.greenrobot.greendao.annotation.Generated;
 public class UserProfile {
     @Id
     private long userId=0;
-    private String name=null;
-    private String department;
-    private String avatar=null;
-    private String gender=null;
-    private String address=null;
-    private String rank=null;
-    private String position=null;
-    @Generated(hash = 95275183)
-    public UserProfile(long userId, String name, String department, String avatar,
-            String gender, String address, String rank, String position) {
+    private String name=null;//姓名
+    private String department=null;//部职别
+    private String shooting_gun=null;//射击枪械
+    private  int bullet_count=0;//子弹数量
+    private String target_number=null;//靶位序号
+    private String group_number=null;//组序号
+    @Generated(hash = 845870119)
+    public UserProfile(long userId, String name, String department,
+            String shooting_gun, int bullet_count, String target_number,
+            String group_number) {
         this.userId = userId;
         this.name = name;
         this.department = department;
-        this.avatar = avatar;
-        this.gender = gender;
-        this.address = address;
-        this.rank = rank;
-        this.position = position;
+        this.shooting_gun = shooting_gun;
+        this.bullet_count = bullet_count;
+        this.target_number = target_number;
+        this.group_number = group_number;
     }
     @Generated(hash = 968487393)
     public UserProfile() {
@@ -53,34 +52,29 @@ public class UserProfile {
     public void setDepartment(String department) {
         this.department = department;
     }
-    public String getAvatar() {
-        return this.avatar;
+    public String getShooting_gun() {
+        return this.shooting_gun;
     }
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
+    public void setShooting_gun(String shooting_gun) {
+        this.shooting_gun = shooting_gun;
     }
-    public String getGender() {
-        return this.gender;
+    public int getBullet_count() {
+        return this.bullet_count;
     }
-    public void setGender(String gender) {
-        this.gender = gender;
+    public void setBullet_count(int bullet_count) {
+        this.bullet_count = bullet_count;
     }
-    public String getAddress() {
-        return this.address;
+    public String getTarget_number() {
+        return this.target_number;
     }
-    public void setAddress(String address) {
-        this.address = address;
+    public void setTarget_number(String target_number) {
+        this.target_number = target_number;
     }
-    public String getRank() {
-        return this.rank;
+    public String getGroup_number() {
+        return this.group_number;
     }
-    public void setRank(String rank) {
-        this.rank = rank;
+    public void setGroup_number(String group_number) {
+        this.group_number = group_number;
     }
-    public String getPosition() {
-        return this.position;
-    }
-    public void setPosition(String position) {
-        this.position = position;
-    }
+   
 }

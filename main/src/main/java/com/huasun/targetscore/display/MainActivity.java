@@ -23,6 +23,7 @@ import com.huasun.core.util.ActivityManager;
 import com.huasun.core.util.DataCleanManager;
 import com.huasun.core.util.log.LatteLogger;
 import com.huasun.display.R2;
+import com.huasun.display.database.UserProfile;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.MarkDelegate;
 import com.huasun.display.main.mark.MarkDelegate1;
@@ -36,6 +37,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 import butterknife.BindView;
 
@@ -61,18 +67,19 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             actionBar.hide();
         }
         Latte.getConfigurator().withActivity(this);
+        String ip=getIpAddress();
+
         //开始消息队列
         // Create the consumer
         mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
         new consumerconnect().execute();
-        mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
+        mConsumer.setOnReceiveCommandMessageHandler(new MessageConsumer.OnReceiveCommandMessageHandler() {
             public void onReceiveMessage(byte[] message) {
                 Command command=null;
                 String text = "";
                 try {
                     ByteArrayInputStream bis = new ByteArrayInputStream (message);
                     ObjectInputStream ois = new ObjectInputStream (bis);
-                    Object object=ois.readObject();
                     command = (Command) ois.readObject();
                     ois.close();
                     bis.close();
@@ -103,9 +110,9 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     @Override
     public LatteDelegate setRootDelegate() {
         //return new LauncherDelegate();
-        //this.signInBottomDelegate=new SignInBottomDelegate();
-        //return this.signInBottomDelegate;
-        return new MarkDelegate();
+        this.signInBottomDelegate=new SignInBottomDelegate();
+        return this.signInBottomDelegate;
+        //return new MarkDelegate();
         //return new MainDelegate();
         //刚开始为等待下命令状态
 
@@ -113,8 +120,12 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     }
 
     @Override
-    public void onSignInSuccess() {
+    public void onSignInSuccess(int index, UserProfile userProfile) {
         Toast.makeText(this,"登陆成功",Toast.LENGTH_LONG).show();
+        signInBottomDelegate.showHideFragment(signInBottomDelegate.getITEM_DELEGATES().get(index), signInBottomDelegate.getITEM_DELEGATES().get(currentcommand));
+        currentcommand = index;
+        MarkDelegate currentDelegate=(MarkDelegate) signInBottomDelegate.getTopChildFragment();
+        currentDelegate.initBasicData(userProfile);
         //startWithPop(new BcsbBottomDelegate());
     }
 
@@ -171,6 +182,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             try {
                 // Connect to broker
                 mConsumer.connectToCommandRabbitMQ();
+
             } catch (Exception e) {
                 // TODO: handle exception
                 e.printStackTrace();
@@ -189,7 +201,30 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     @Override
     protected void onPause() {
         super.onPause();
-        mConsumer.dispose();
+        mConsumer.Dispose();//此处需要认证考虑
     }
 
+    private String getIpAddress(){
+        try{
+            for(Enumeration<NetworkInterface> enNetI=NetworkInterface.getNetworkInterfaces();enNetI.hasMoreElements();){
+                NetworkInterface netI=enNetI.nextElement();
+                for(Enumeration<InetAddress>enumIpAdress =netI.getInetAddresses();enumIpAdress.hasMoreElements();){
+                    InetAddress inetAddress=enumIpAdress.nextElement();
+                    if(inetAddress instanceof Inet4Address&&!inetAddress.isLoopbackAddress()){
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        }catch (SocketException e)
+        {
+            Latte.getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"网络连接有问题，请检查设置后，并重新启动App",Toast.LENGTH_LONG).show();
+                }
+            });
+            e.printStackTrace();
+        }
+        return "";
+    }
 }

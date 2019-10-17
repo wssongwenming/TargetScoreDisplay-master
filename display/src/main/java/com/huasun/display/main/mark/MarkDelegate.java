@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
 import com.huasun.display.R;
 import com.huasun.display.R2;
+import com.huasun.display.database.UserProfile;
 import com.huasun.display.main.mark.view.MarkDisplay;
 import com.huasun.display.recycler.MultipleItemEntity;
 import com.huasun.display.refresh.PagingBean;
@@ -53,7 +55,20 @@ public class MarkDelegate extends BottomItemDelegate {
     RecyclerView mRecyclerView=null;
     @BindView(R2.id.srl_mark)
     SwipeRefreshLayout mRefreshLayout=null;
+    @BindView(R2.id.edit_name)
+    EditText mName=null;
+    @BindView(R2.id.edit_department)
+    EditText mDepartment=null;
+    @BindView(R2.id.edit_gun)
+    EditText mGun=null;
+    @BindView(R2.id.edit_bullet)
+    EditText mBullet=null;
+    @BindView(R2.id.edit_target_number)
+    EditText mTargetNumber=null;
+    @BindView(R2.id.edit_group_number)
+    EditText mGroupNumber=null;
 
+    private UserProfile userProfile;
     private RefreshHandler mRefreshHandler;
 
     private void initRefreshLayout(){
@@ -71,15 +86,21 @@ public class MarkDelegate extends BottomItemDelegate {
         initRecyclerView();
         mRefreshHandler.firstPage("index");
     }
+
+    public void initBasicData(UserProfile userProfile) {
+        mName.setText(userProfile.getName());
+        mDepartment.setText(userProfile.getDepartment());
+        mGun.setText(userProfile.getShooting_gun());
+        mBullet.setText(userProfile.getBullet_count()+"");//将int　转为CharSequence
+        mGroupNumber.setText(userProfile.getGroup_number());
+        mTargetNumber.setText(userProfile.getTarget_number());
+    }
+
     private void initRecyclerView() {
         LinearLayoutManager linearLayoutManager=new LinearLayoutManager(getContext());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         mRecyclerView.setLayoutManager(linearLayoutManager);
 
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
     }
     @Override
     public Object setLayout() {
@@ -88,14 +109,6 @@ public class MarkDelegate extends BottomItemDelegate {
     @Override
     public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
         mRefreshHandler=RefreshHandler.create(mRefreshLayout,mRecyclerView,new MarkDataConverter(),new PagingBean());
-        if(mRefreshLayout!=null) {
-            mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    refresh();
-                }
-            });
-        }
         ViewTreeObserver observer = mLlcPersonData.getViewTreeObserver();
          observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
            @Override
@@ -111,18 +124,6 @@ public class MarkDelegate extends BottomItemDelegate {
             }
         });
 
-    }
-    private void refresh(){
-        if(mRefreshLayout!=null)
-            mRefreshLayout.setRefreshing(true);
-        Latte.getHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-
-                //可以进行网络请求，REFESH_LAYOUT.setRefreshing(false);可以放入网络请求的success回调
-                mRefreshLayout.setRefreshing(false);
-            }
-        },2000);
     }
 
 }

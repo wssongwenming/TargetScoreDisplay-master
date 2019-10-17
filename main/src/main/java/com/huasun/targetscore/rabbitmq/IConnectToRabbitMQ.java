@@ -1,7 +1,11 @@
 package com.huasun.targetscore.rabbitmq;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.huasun.core.app.ConfigKeys;
+import com.huasun.core.app.Latte;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -22,7 +26,8 @@ public abstract class IConnectToRabbitMQ {
     protected Channel mModel = null;//channel
     protected Connection mConnection;
 
-    protected boolean Running ;
+    protected boolean commandConsumerRunning ;
+    protected boolean markDataConsumerRunning;
 
     protected String MyExchangeType ;
 
@@ -44,8 +49,8 @@ public abstract class IConnectToRabbitMQ {
 
     public void Dispose()
     {
-        Running = false;
-
+        commandConsumerRunning  = false;
+        markDataConsumerRunning=false;
 			try {
 				if (mConnection!=null)
 					mConnection.close();
@@ -79,11 +84,19 @@ public abstract class IConnectToRabbitMQ {
           mModel.basicQos(1);
           //创建一个的交换器
           mModel.exchangeDeclare(mExchange, MyExchangeType, true);
+            Log.d("mq", "connectToRabbitMQ: ");
           return true;
         }
         catch (Exception e)
         {
-      	  e.printStackTrace();
+
+      	    e.printStackTrace();
+            Latte.getHandler().post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"未能正常连接消息队列，请检查设置后，并重新启动App",Toast.LENGTH_LONG).show();
+                }
+            });
             return false;
         }
     }

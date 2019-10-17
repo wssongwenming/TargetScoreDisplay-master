@@ -94,7 +94,6 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     private float mTextSize = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP, 40, getResources().getDisplayMetrics());
 
-
     public MarkDisplay(Context context) {
         super(context);
     }
@@ -113,8 +112,6 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         setKeepScreenOn(true);
 
     }
-
-
     /**
      * 设置控件为正方形
      */

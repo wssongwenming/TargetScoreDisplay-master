@@ -8,5 +8,5 @@ import com.bcsb.rabbitmq.entity.MarkData;
  * Description:
  */
 public interface IDataListener {
-    MarkData[] getMarkData();
+    void getMarkData(String jsonStr);
 }

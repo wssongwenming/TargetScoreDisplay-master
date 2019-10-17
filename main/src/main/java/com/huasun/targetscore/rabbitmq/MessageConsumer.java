@@ -15,45 +15,73 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
   public MessageConsumer(String server, String exchange, String exchangeType,int port,String username,String password) {
       super(server, exchange, exchangeType, port,username,password);
   }
-  //The Queue name for this consumer
-  private String mQueue;
-  private QueueingConsumer MySubscription;
+  //The Queue name for command consumer
+  private String mCommandQueue;
+  private QueueingConsumer MyCommandSubscription;
   //last message to post back
-  private byte[] mLastMessage;
+  private byte[] mLastCommandMessage;
+  //射击成绩数据
+  private String mMarkDataQueue;
+  private QueueingConsumer MyMarkDataSubscription;
+  private byte[]mLastMarkDataMessage;
+
+
   // An interface to be implemented by an object that is interested in messages(listener)
-  public interface OnReceiveMessageHandler{
+  public interface OnReceiveCommandMessageHandler{
       public void onReceiveMessage(byte[] message);
   };
-
-  //A reference to the listener, we can only have one at a time(for now)
-  private OnReceiveMessageHandler mOnReceiveMessageHandler;
-
+  public interface OnReceiveMarkDataHandler{
+      public void onReceiveMessage(byte[]message);
+  }
+  //A reference to the listener, 监听指令
+  private OnReceiveCommandMessageHandler mOnReceiveCommandMessageHandler;
+  //监听射击成绩
+  private OnReceiveMarkDataHandler mOnReceiveMarkDataHandler;
   /**
    *
    * Set the callback for received messages
    * @param handler The callback
    */
-  public void setOnReceiveMessageHandler(OnReceiveMessageHandler handler){
-      mOnReceiveMessageHandler = handler;
+  public void setOnReceiveCommandMessageHandler(OnReceiveCommandMessageHandler handler){
+      mOnReceiveCommandMessageHandler = handler;
   };
+  public void setOnReceiveMarkDataHandler(OnReceiveMarkDataHandler handler){
+      mOnReceiveMarkDataHandler=handler;
+  }
+
 
   private Handler mMessageHandler = new Handler();
   private Handler mConsumeHandler = new Handler();
 
   // Create runnable for posting back to main thread
-  final Runnable mReturnMessage = new Runnable() {
+  final Runnable mReturnCommandMessage = new Runnable() {
       public void run() {
-          mOnReceiveMessageHandler.onReceiveMessage(mLastMessage);
+          mOnReceiveCommandMessageHandler.onReceiveMessage(mLastCommandMessage);
       }
   };
 
-  final Runnable mConsumeRunner = new Runnable() {
+  final Runnable mConsumeCommandRunner = new Runnable() {
       public void run() {
-          Consume();
+          ConsumeCommandMessage();
+      }
+  };
+    final Runnable mReturnMarkDataMessage = new Runnable() {
+        public void run() {
+            mOnReceiveMarkDataHandler.onReceiveMessage(mLastMarkDataMessage);
+        }
+    };
+
+  final Runnable mConsumeMarkDataRunner=new Runnable() {
+      @Override
+      public void run() {
+          ConsumeMarkDataMessage();
       }
   };
 
-  /**
+    private void ConsumeMarkDataMessage() {
+    }
+
+    /**
    * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
    */
 
@@ -61,33 +89,67 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
   {
      if(super.connectToRabbitMQ())
      {
-
          try {
-             mQueue = mModel.queueDeclare("signin-queue",true,false,false,null).getQueue();
+             mCommandQueue = mModel.queueDeclare("signin-queue",true,false,false,null).getQueue();
 
-             MySubscription = new QueueingConsumer(mModel);
+             Log.d("mq1", "connectToCommandRabbitMQ: ");
+             MyCommandSubscription = new QueueingConsumer(mModel);
 
-             mModel.basicConsume(mQueue, false, MySubscription);
+             mModel.basicConsume(mCommandQueue, false, MyCommandSubscription);
 
           } catch (IOException e) {
               e.printStackTrace();
               return false;
           }
            if (MyExchangeType == "topic")
-                 AddBinding("signinway.*");//fanout has default binding
+                 AddBindingCommandQueue("signinway.*");//fanout has default binding
 
-          Running = true;
-          mConsumeHandler.post(mConsumeRunner);//在一个新的线程里开启消息阻塞获取模式
+         commandConsumerRunning = true;
+          mConsumeHandler.post(mConsumeCommandRunner);//在一个新的线程里开启消息阻塞获取模式
          return true;
      }
      return false;
   }
 
-  /**
+  public boolean connectToMarkDataRabbitMQ()
+    {
+        if(super.connectToRabbitMQ())
+        {
+            try {
+                mMarkDataQueue = mModel.queueDeclare("markdata-queue",true,false,false,null).getQueue();
+
+                MyMarkDataSubscription = new QueueingConsumer(mModel);
+
+                mModel.basicConsume(mMarkDataQueue, false, MyMarkDataSubscription);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            if (MyExchangeType == "topic")
+                AddBindingMarkDataQueue("target_position_1.*");//fanout has default binding
+
+            markDataConsumerRunning = true;
+            mConsumeHandler.post(mConsumeMarkDataRunner);//在一个新的线程里开启消息阻塞获取模式
+            return true;
+        }
+        return false;
+    }
+
+    private void AddBindingMarkDataQueue(String routingKey) {
+        try {
+            mModel.queueBind("markdata-queue", "bcsb-exchange", routingKey);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    /**
    * Add a binding between this consumers Queue and the Exchange with routingKey
    * @param routingKey the binding key eg GOOG
    */
-  public void AddBinding(String routingKey)
+  public void AddBindingCommandQueue(String routingKey)
   {
       try {
           mModel.queueBind("signin-queue", "bcsb-exchange", routingKey);
@@ -103,25 +165,25 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
   public void RemoveBinding(String routingKey)
   {
       try {
-          mModel.queueUnbind(mQueue, mExchange, routingKey);
+          mModel.queueUnbind(mCommandQueue, mExchange, routingKey);
       } catch (IOException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
       }
   }
 
-  private void Consume()
+  private void ConsumeCommandMessage()
   {
       Thread thread = new Thread()
       {
            @Override
               public void run() {
-               while(Running){
+               while(commandConsumerRunning){
                   QueueingConsumer.Delivery delivery;
                   try {
-                      delivery = MySubscription.nextDelivery();//DG当前线程被阻塞，直到有消息来到
-                      mLastMessage = delivery.getBody();
-                      mMessageHandler.post(mReturnMessage);//通过handler将消息处理线程抛回主线程
+                      delivery = MyCommandSubscription.nextDelivery();//DG当前线程被阻塞，直到有消息来到
+                      mLastCommandMessage = delivery.getBody();
+                      mMessageHandler.post(mReturnCommandMessage);//通过handler将消息处理线程抛回主线程
                       try {
                           mModel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                       } catch (IOException e) {
@@ -134,10 +196,9 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
            }
       };
       thread.start();
-
   }
 
-  public void dispose(){
+/*  public void dispose(){
       Running = false;
-  }
+  }*/
 }

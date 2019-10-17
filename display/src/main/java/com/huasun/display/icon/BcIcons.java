@@ -3,8 +3,9 @@ package com.huasun.display.icon;
 import com.joanzapata.iconify.Icon;
 
 public enum BcIcons implements Icon {
-    icon_wait('\ue67c'),
+    icon_wait('\ue606'),
     icon_signin_by_pass('\ue618'),
+    icon_shooting('\ue600'),
     icon_signin_by_face('\ue60f');
     ;
     private char character;
