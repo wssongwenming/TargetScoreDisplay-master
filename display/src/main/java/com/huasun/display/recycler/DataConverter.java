@@ -17,7 +17,7 @@ public abstract class DataConverter {
     }
     protected String getJsonData(){
         if(mJsonData==null||mJsonData.isEmpty()){
-            throw new NullPointerException("DATA IS NULL");
+            //throw new NullPointerException("DATA IS NULL");//去掉了异常抛出，因为为空时就不显示数据
         }
         return mJsonData;
     }

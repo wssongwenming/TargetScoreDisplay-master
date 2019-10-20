@@ -48,7 +48,7 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
         },2000);
     }
 
-    public void firstPage(String url){
+/*    public void injectDataIntoRecy (String url){
         BEAN.setDelayed(10);
         BEAN.setPageSize(20);
         RestClient.builder()
@@ -66,6 +66,14 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
                 })
                 .build()
                 .get();
+    }*/
+
+    public void initData (String json){
+                        final JSONObject object= JSON.parseObject(json);
+                        mAdapter=MultipleRecyclerAdapter.create(CONVERTER.setJsonData(json));
+                        mAdapter.setOnLoadMoreListener(RefreshHandler.this,RECYCLERVIEW);
+                        RECYCLERVIEW.setAdapter(mAdapter);
+
     }
 
     @Override

@@ -1,17 +1,20 @@
 package com.huasun.targetscore.display;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bcsb.rabbitmq.entity.Command;
 import com.huasun.core.activities.ProxyActivity;
 import com.huasun.core.app.ConfigKeys;
@@ -21,15 +24,13 @@ import com.huasun.core.ui.launcher.ILauncherListener;
 import com.huasun.core.ui.launcher.OnLauncherFinishTag;
 import com.huasun.core.util.ActivityManager;
 import com.huasun.core.util.DataCleanManager;
-import com.huasun.core.util.log.LatteLogger;
-import com.huasun.display.R2;
 import com.huasun.display.database.UserProfile;
 import com.huasun.display.launcher.LauncherDelegate;
+import com.huasun.display.main.mark.IMarkAttachListener;
 import com.huasun.display.main.mark.MarkDelegate;
-import com.huasun.display.main.mark.MarkDelegate1;
 import com.huasun.display.sign.ISignListener;
 import com.huasun.display.sign.SignInBottomDelegate;
-import com.huasun.display.sign.SignInByFace.SignByFaceRecDelegate;
+import com.huasun.display.sign.SignInByFace.SignInByFaceRecDelegate;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 import com.huasun.targetscore.rabbitmq.MessageConsumer;
 
@@ -43,11 +44,11 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-import butterknife.BindView;
+public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener{
 
-public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener{
     AppCompatTextView mBasicSituation=null;
     LinearLayoutCompat mDataContainer=null;
+    private MarkDelegate markDelegate;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
     private int currentcommand=Latte.getConfiguration(ConfigKeys.COMMAND);
     private MessageConsumer mConsumer;
@@ -55,6 +56,14 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     //private String queue_name = "signin-queue";
     private String exchange_name = "bcsb-exchange";
     private String exchange_type="topic";
+
+    private MarkDelegate latestmarkDelegate;
+
+    private String commandQueueName="";
+    private String commandRoutingKey="";
+
+    private String markDataQueueName="";
+    private String markDataRoutingKey="";
     private int port=5672;
     private String username="client";
     private String password="client";
@@ -68,50 +77,63 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         Latte.getConfigurator().withActivity(this);
         String ip=getIpAddress();
-
+        String number=getLastIP(ip);//去ip地址最后部分为靶位编号，在开始时绑定mac地址和ip，让ip为1，2，3
+        commandQueueName="command_queue_"+number;
+        commandRoutingKey="command_routing_key_"+number;
+        markDataQueueName="markData_queue_"+number;
+        markDataRoutingKey="markData_routing_key_"+number;
         //开始消息队列
         // Create the consumer
         mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
         new consumerconnect().execute();
+        mConsumer.setOnReceiveMarkDataHandler(new MessageConsumer.OnReceiveMarkDataHandler() {
+            @TargetApi(Build.VERSION_CODES.O)
+            @Override
+            public void onReceiveMessage(byte[] message) {
+                String markJson = new String(message);//将收到的数据还原为json, 发送方发送时为json
+                if(markDelegate!=null){
+                    markDelegate.getMarkDisplay().setMarkJson(markJson);
+                    markDelegate.mRefreshHandler.initData(markJson);
+                }
+
+/*              MarkDelegate currentDelegate=(MarkDelegate) signInBottomDelegate.getTopChildFragment();
+                currentDelegate.getMarkDisplay().setMarkJson(markJson);//
+                currentDelegate.mRefreshHandler.initData(markJson);//初始化markdelegate的recyclerview的数据
+                latestmarkDelegate=currentDelegate;*/
+            }
+        });
         mConsumer.setOnReceiveCommandMessageHandler(new MessageConsumer.OnReceiveCommandMessageHandler() {
             public void onReceiveMessage(byte[] message) {
-                Command command=null;
-                String text = "";
-                try {
-                    ByteArrayInputStream bis = new ByteArrayInputStream (message);
-                    ObjectInputStream ois = new ObjectInputStream (bis);
-                    command = (Command) ois.readObject();
-                    ois.close();
-                    bis.close();
-                    int newcommand=command.getIndex();
-                    if(newcommand==4){//完毕退出
-                        DataCleanManager.cleanApplicationData((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY));
-                        ActivityManager.getInstance().finishActivitys();
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                        System.exit(0);
-                    }else {
-                        //这里的status为消息队列传递的command的index，SignInBottomeDelegate会直接读取ｉｎｄｅｘ，来决定启动哪个界面
-                        // signin_by_pass("密码登陆",0),signin_by_face("人脸登陆",1),waiting("等候中",2),shoot("射击",3),finish("结束",4);
-                        Latte.getConfigurator().withCommand(newcommand);
-                        //根据获得的命令显示或隐藏对应的Fragment
-                        signInBottomDelegate.showHideFragment(signInBottomDelegate.getITEM_DELEGATES().get(newcommand), signInBottomDelegate.getITEM_DELEGATES().get(currentcommand));
-                        currentcommand = newcommand;//currentcomman相当于index
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-     } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                Log.d("command", "onReceiveMessage: command");
+                String commandJson = new String(message);//将收到的数据还原为json, 发送方发送时为json
+                final JSONObject command= JSON.parseObject(commandJson);
+                int newcommand=command.getInteger("index");
+                Latte.getConfigurator().withCommand(newcommand);
+                if(newcommand==4){//完毕退出
+                    DataCleanManager.cleanApplicationData((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY));
+                    ActivityManager.getInstance().finishActivitys();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(0);
+                }else if(newcommand==0){
+                    startWithPop(new LauncherDelegate());
                 }
-            }
+                else if(newcommand==1){
+                    Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"ok",Toast.LENGTH_LONG).show();
+                    startWithPop(SignInByPassDelegate.newInstance(commandJson));
+                }else if(newcommand==2){
+                    startWithPop(SignInByFaceRecDelegate.newInstance(commandJson));
+                }else if(newcommand==3){
+                    startWithPop(MarkDelegate.newInstance(commandJson));
+                }
+
+                }
         });
     }
     @Override
     public LatteDelegate setRootDelegate() {
-        //return new LauncherDelegate();
-        this.signInBottomDelegate=new SignInBottomDelegate();
-        return this.signInBottomDelegate;
+        return new LauncherDelegate();
+        //this.signInBottomDelegate=new SignInBottomDelegate();
+        //return this.signInBottomDelegate;
         //return new MarkDelegate();
         //return new MainDelegate();
         //刚开始为等待下命令状态
@@ -120,13 +142,16 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
     }
 
     @Override
-    public void onSignInSuccess(int index, UserProfile userProfile) {
+    public void onSignInSuccess(int index, String command) {
         Toast.makeText(this,"登陆成功",Toast.LENGTH_LONG).show();
-        signInBottomDelegate.showHideFragment(signInBottomDelegate.getITEM_DELEGATES().get(index), signInBottomDelegate.getITEM_DELEGATES().get(currentcommand));
+        startWithPop(MarkDelegate.newInstance(command));
+        /*signInBottomDelegate.showHideFragment(signInBottomDelegate.getITEM_DELEGATES().get(index), signInBottomDelegate.getITEM_DELEGATES().get(currentcommand));
         currentcommand = index;
         MarkDelegate currentDelegate=(MarkDelegate) signInBottomDelegate.getTopChildFragment();
         currentDelegate.initBasicData(userProfile);
-        //startWithPop(new BcsbBottomDelegate());
+        currentDelegate.getMarkDisplay().setMarkJson("");
+        currentDelegate.mRefreshHandler.initData("");
+        //startWithPop(new BcsbBottomDelegate());*/
     }
 
     @Override
@@ -175,14 +200,24 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         return Latte.getConfiguration(ConfigKeys.COMMAND);
     }
 
+    @Override
+    public void setMarkDelegate(MarkDelegate markDelegate) {
+        this.markDelegate=markDelegate;
+    }
+
+    @Override
+    public MarkDelegate getMarkDelegate() {
+        return markDelegate;
+    }
+
     //消息队列相关函数
     private  class consumerconnect extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... Message) {
             try {
                 // Connect to broker
-                mConsumer.connectToCommandRabbitMQ();
-
+                mConsumer.connectToCommandRabbitMQ(commandQueueName,exchange_name,commandRoutingKey);
+                mConsumer.connectToMarkDataRabbitMQ(markDataQueueName,exchange_name,markDataRoutingKey);
             } catch (Exception e) {
                 // TODO: handle exception
                 e.printStackTrace();
@@ -227,4 +262,11 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         return "";
     }
+
+    private String getLastIP(String ip){
+        int index=ip.lastIndexOf(".");
+        String lastIP=ip.substring(index+1,ip.length());
+        return lastIP;
+    }
+
 }

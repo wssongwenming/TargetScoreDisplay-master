@@ -3,9 +3,14 @@ package com.huasun.display.sign.SignInByPassword;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.widget.EditText;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
 import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
 import com.huasun.core.net.RestClient;
@@ -13,6 +18,9 @@ import com.huasun.core.net.callback.ISuccess;
 import com.huasun.core.util.timer.ITimerListener;
 import com.huasun.display.R;
 import com.huasun.display.R2;
+import com.huasun.display.recycler.ItemType;
+import com.huasun.display.recycler.MultipleFields;
+import com.huasun.display.recycler.MultipleItemEntity;
 import com.huasun.display.sign.ISignListener;
 
 import butterknife.BindView;
@@ -24,7 +32,8 @@ import butterknife.OnClick;
  * Description:
  */
 public class SignInByPassDelegate extends BottomItemDelegate {
-
+    private static final String USER_INFO = "USER_INFO";
+    private String userInfo;
     @BindView(R2.id.edit_sign_in_id)
     EditText mId=null;
     @BindView(R2.id.edit_sign_in_name)
@@ -33,6 +42,8 @@ public class SignInByPassDelegate extends BottomItemDelegate {
     EditText mDepartment=null;
     @BindView(R2.id.edit_sign_in_password)
     EditText mPassword=null;
+    @BindView(R2.id.img_sign_in_photo)
+    AppCompatImageView mPhoto=null;
     private ISignListener mISignListener=null;
     @OnClick(R2.id.btn_sign_in)
     void onClickSignIn(){
@@ -44,7 +55,7 @@ public class SignInByPassDelegate extends BottomItemDelegate {
                     .success(new ISuccess() {
                         @Override
                         public void onSuccess(String response) {
-                            SignHandler.onSignIn(response,mISignListener);
+                            SignInHandler.onSignIn(response,mISignListener);
                         }
                     })
                     .build()
@@ -59,6 +70,41 @@ public class SignInByPassDelegate extends BottomItemDelegate {
             mISignListener=(ISignListener) activity;
         }
     }
+    public void initData(String json){
+        if(json!=null&&!json.isEmpty()) {
+            final JSONObject data= JSON.parseObject(json).getJSONObject("data");
+                final int id = data.getInteger("userId");//编号
+                final String name = data.getString("name");
+                final String department = data.getString("department");
+                final String password = data.getString("password");//登陆者的密码，一般为空，有时不需输入时可以输入默认的密码
+                final String photopath=data.getString("photopath");//登陆者的图片路径
+                mId.setText(id+"");
+                mName.setText(name);
+                mDepartment.setText(department);
+                mPassword.setText(password);
+                Glide.with(getContext())
+                        .load(photopath)
+                        .into(mPhoto);
+
+            }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        final Bundle args = getArguments();
+        if (args != null) {
+            userInfo = args.getString(USER_INFO);
+        }
+    }
+
+    public static SignInByPassDelegate newInstance(String userInfo){
+        final Bundle args = new Bundle();
+        args.putString(USER_INFO,userInfo);
+        final SignInByPassDelegate delegate = new SignInByPassDelegate();
+        delegate.setArguments(args);
+        return delegate;
+    }
 
     @Override
     public Object setLayout() {
@@ -68,7 +114,7 @@ public class SignInByPassDelegate extends BottomItemDelegate {
 
     @Override
     public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
-
+        initData(userInfo);
     }
     private boolean checkForm(){
         final String id=mId.getText().toString();

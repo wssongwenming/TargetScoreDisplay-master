@@ -13,6 +13,7 @@ import com.huasun.core.util.timer.BaseTimerTask;
 import com.huasun.core.util.timer.ITimerListener;
 import com.huasun.display.R;
 import com.huasun.display.sign.ISignListener;
+import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 
 import java.util.Timer;
 
@@ -21,8 +22,9 @@ import java.util.Timer;
  * Date:2019/9/26
  * Description:
  */
-public class SignByFaceRecDelegate extends BottomItemDelegate {
-
+public class SignInByFaceRecDelegate extends BottomItemDelegate {
+    private static final String USER_INFO = "USER_INFO";
+    private String userInfo;
     private ISignListener mISignListener=null;
     private ILauncherListener mILauncherListener=null;
     private Timer mTimer=null;
@@ -50,7 +52,22 @@ public class SignByFaceRecDelegate extends BottomItemDelegate {
         //initTimer();
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        final Bundle args = getArguments();
+        if (args != null) {
+            userInfo = args.getString(USER_INFO);
+        }
+    }
 
+    public static SignInByFaceRecDelegate newInstance(String userInfo){
+        final Bundle args = new Bundle();
+        args.putString(USER_INFO,userInfo);
+        final SignInByFaceRecDelegate delegate = new SignInByFaceRecDelegate();
+        delegate.setArguments(args);
+        return delegate;
+    }
 
     private void checkSignIn(OnLauncherFinishTag onLauncherFinishTag ){
         mILauncherListener.onLauncherFinish(onLauncherFinishTag);

@@ -4,13 +4,16 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
 
+import java.io.Serializable;
+
 /**
  * author:songwenming
  * Date:2019/9/24
  * Description:
  */
 @Entity(nameInDb = "user_profile")
-public class UserProfile {
+public class UserProfile implements Serializable{
+    private static final long serialVersionUID = 1L;
     @Id
     private long userId=0;
     private String name=null;//姓名

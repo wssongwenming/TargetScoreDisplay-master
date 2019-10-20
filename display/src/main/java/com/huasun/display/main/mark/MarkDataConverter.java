@@ -20,9 +20,7 @@ import java.util.ArrayList;
 public class MarkDataConverter extends DataConverter {
     @Override
     public ArrayList<MultipleItemEntity> convert() {
-        final JSONArray dataArray=JSON.parseObject(getJsonData()).getJSONArray("data");
-        Log.d("json", dataArray+"");
-        final int size=dataArray.size();
+        ENTITIES.clear();
         final MultipleItemEntity title=MultipleItemEntity.builder()
                 .setFiled(MultipleFields.ID,"子弹序号")
                 .setFiled(MultipleFields.ITEM_TYPE, ItemType.TEXT_TEXT)
@@ -31,25 +29,27 @@ public class MarkDataConverter extends DataConverter {
                 .setFiled(MultipleFields.SHOOTINGTIE,"射击时间")
                 .build();
         ENTITIES.add(title);
-        for (int i=0;i<size;i++){
-            final JSONObject data=dataArray.getJSONObject(i);
-            final int id=data.getInteger("id");
-            final String ringNumber=data.getString("ringNumber");
-            final String offsetDirection=data.getString("offsetDirection");
-            final String shootingTime=data.getString("shootingTime");
-            int type= ItemType.TEXT_TEXT;
-            final MultipleItemEntity entity=MultipleItemEntity.builder()
-                    .setFiled(MultipleFields.ID,id)
-                    .setFiled(MultipleFields.ITEM_TYPE,type)
-                    .setFiled(MultipleFields.RINGNUMBER,ringNumber)
-                    .setFiled(MultipleFields.OFFSETDIRECTION,offsetDirection)
-                    .setFiled(MultipleFields.SHOOTINGTIE,shootingTime)
-                    .build();
-            ENTITIES.add(entity);
-
+        String json=getJsonData();
+        if(json!=null&&!json.isEmpty()) {
+            final JSONArray dataArray = JSON.parseObject(json).getJSONArray("data");
+            final int size = dataArray.size();
+            for (int i = 0; i < size; i++) {
+                final JSONObject data = dataArray.getJSONObject(i);
+                final int id = data.getInteger("id");
+                final String ringNumber = data.getString("ringNumber");
+                final String offsetDirection = data.getString("offsetDirection");
+                final String shootingTime = data.getString("shootingTime");
+                int type = ItemType.TEXT_TEXT;
+                final MultipleItemEntity entity = MultipleItemEntity.builder()
+                        .setFiled(MultipleFields.ID, id)
+                        .setFiled(MultipleFields.ITEM_TYPE, type)
+                        .setFiled(MultipleFields.RINGNUMBER, ringNumber)
+                        .setFiled(MultipleFields.OFFSETDIRECTION, offsetDirection)
+                        .setFiled(MultipleFields.SHOOTINGTIE, shootingTime)
+                        .build();
+                ENTITIES.add(entity);
+            }
         }
-
-
         return ENTITIES;
     }
 }

@@ -1,22 +1,27 @@
 package com.bcsb.rabbitmq.entity;
 
-public enum Command {
-	waiting("等候中",0),signin_by_pass("密码登陆",1),signin_by_face("人脸登陆",2),shoot("射击",3),finish("结束",4);
-	private int index;
-    private String value; 
+import java.io.Serializable;
 
+public class Command{
+   int code;
+   String description;
+   int index;
+   UserDetail data;
 
-    private Command(String value,int index) {  
-        this.value = value;  
-        this.index=index;
-    }
-
-	public String getValue() {
-		return value;
+	public int getCode() {
+		return code;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setCode(int code) {
+		this.code = code;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public int getIndex() {
@@ -27,7 +32,11 @@ public enum Command {
 		this.index = index;
 	}
 
+	public UserDetail getData() {
+		return data;
+	}
 
-	
-    
+	public void setData(UserDetail data) {
+		this.data = data;
+	}
 }

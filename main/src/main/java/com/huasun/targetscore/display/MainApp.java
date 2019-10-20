@@ -21,7 +21,7 @@ public class MainApp extends Application {
         Latte.init(this)
                 .withIcon(new FontAwesomeModule())
                 .withIcon(new FontBcModule())
-                .withCommand(Command.waiting.getIndex())
+                .withCommand(0)
                 .withApiHost("http://127.0.0.1")
                 .withInterceptor(new DebugInterceptor("index",R.raw.test))
                 .configure();

@@ -84,7 +84,7 @@ public abstract class IConnectToRabbitMQ {
           mModel.basicQos(1);
           //创建一个的交换器
           mModel.exchangeDeclare(mExchange, MyExchangeType, true);
-            Log.d("mq", "connectToRabbitMQ: ");
+
           return true;
         }
         catch (Exception e)

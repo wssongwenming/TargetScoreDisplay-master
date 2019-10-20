@@ -13,7 +13,7 @@ import com.huasun.core.delegates.bottom.BottomTabBean;
 import com.huasun.core.delegates.bottom.ItemBuilder;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.MarkDelegate;
-import com.huasun.display.sign.SignInByFace.SignByFaceRecDelegate;
+import com.huasun.display.sign.SignInByFace.SignInByFaceRecDelegate;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 
 import java.util.LinkedHashMap;
@@ -41,7 +41,7 @@ public class SignInBottomDelegate extends BaseBottomDelegate {
         final LinkedHashMap<BottomTabBean,BottomItemDelegate>items=new LinkedHashMap<>();
         items.put(new BottomTabBean("{icon-wait}","等候中"), new LauncherDelegate());
         items.put(new BottomTabBean("{icon-signin-by-pass}","密码登陆"),new SignInByPassDelegate());
-        items.put(new BottomTabBean("{icon-signin-by-face}","人脸识别登陆"),new SignByFaceRecDelegate());
+        items.put(new BottomTabBean("{icon-signin-by-face}","人脸识别登陆"),new SignInByFaceRecDelegate());
         items.put(new BottomTabBean("{icon-shooting}","开始射击"),new MarkDelegate());
         return builder.addItems(items).build();
     }

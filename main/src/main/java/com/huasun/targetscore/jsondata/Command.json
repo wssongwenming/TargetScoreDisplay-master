@@ -1,0 +1,59 @@
+{"code":0,
+  "description":"等候命令",
+  "index":0,
+  "data":
+  [
+  ]
+}
+
+{"code":0,
+  "description":"密码登陆命令",
+  "index":1,
+  "data":
+  [
+    {
+      "userId":1,//编号
+      "name":"zhangsan",//姓名
+      "department":"****bemen",
+      "password":"111111",
+      "shooting_gun":"手枪",
+      "photo_path":"",
+      "bullet_count":3,
+      "target_number":"12",
+      "group_number":"1"
+    }
+  ]
+}
+
+{"code":0,
+  "description":"人脸登陆命令",
+  "index":2,
+  "data":
+  [
+    {"userId":1,//编号
+      "name":"zhangsan",//姓名
+      "department":"****bemen",
+      "photopath":""}
+  ]
+}
+//一般情况下是点击万登陆后到达登陆界面，但有时如果直接让选手射击，可以发出射击命令，免去登陆
+{ "code":0,
+  "description":"射击命令",
+  "index":3,
+  "data":
+  [
+    {
+      "userId":1,//编号
+      "name":"zhangsan",//姓名
+      "department":"****bemen",
+      "password":"111111",
+      "shooting_gun":"手枪",
+      "photo_path":"",
+      "bullet_count":3,
+      "target_number":"12",
+      "group_number":"1"
+    }
+  ]
+}
+
+

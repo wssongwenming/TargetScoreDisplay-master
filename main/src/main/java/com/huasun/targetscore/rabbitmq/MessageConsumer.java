@@ -78,21 +78,17 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
       }
   };
 
-    private void ConsumeMarkDataMessage() {
-    }
-
-    /**
+   /**
    * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
    */
 
-  public boolean connectToCommandRabbitMQ()
+  public boolean connectToCommandRabbitMQ(String queueName,String exchangeName,String routingKey)
   {
      if(super.connectToRabbitMQ())
      {
          try {
-             mCommandQueue = mModel.queueDeclare("signin-queue",true,false,false,null).getQueue();
+             mCommandQueue = mModel.queueDeclare(queueName,true,false,false,null).getQueue();
 
-             Log.d("mq1", "connectToCommandRabbitMQ: ");
              MyCommandSubscription = new QueueingConsumer(mModel);
 
              mModel.basicConsume(mCommandQueue, false, MyCommandSubscription);
@@ -102,7 +98,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
               return false;
           }
            if (MyExchangeType == "topic")
-                 AddBindingCommandQueue("signinway.*");//fanout has default binding
+                 AddBindingQueue(queueName,exchangeName,routingKey);
 
          commandConsumerRunning = true;
           mConsumeHandler.post(mConsumeCommandRunner);//在一个新的线程里开启消息阻塞获取模式
@@ -111,12 +107,12 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
      return false;
   }
 
-  public boolean connectToMarkDataRabbitMQ()
+  public boolean connectToMarkDataRabbitMQ(String queueName,String exchangeName,String routingKey)
     {
         if(super.connectToRabbitMQ())
         {
             try {
-                mMarkDataQueue = mModel.queueDeclare("markdata-queue",true,false,false,null).getQueue();
+                mMarkDataQueue =mModel.queueDeclare(queueName,true,false,false,null).getQueue();
 
                 MyMarkDataSubscription = new QueueingConsumer(mModel);
 
@@ -127,7 +123,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
                 return false;
             }
             if (MyExchangeType == "topic")
-                AddBindingMarkDataQueue("target_position_1.*");//fanout has default binding
+                AddBindingQueue(queueName,exchangeName,routingKey);//fanout has default binding
 
             markDataConsumerRunning = true;
             mConsumeHandler.post(mConsumeMarkDataRunner);//在一个新的线程里开启消息阻塞获取模式
@@ -136,23 +132,14 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
         return false;
     }
 
-    private void AddBindingMarkDataQueue(String routingKey) {
-        try {
-            mModel.queueBind("markdata-queue", "bcsb-exchange", routingKey);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    /**
+   /**
    * Add a binding between this consumers Queue and the Exchange with routingKey
    * @param routingKey the binding key eg GOOG
    */
-  public void AddBindingCommandQueue(String routingKey)
+  public void AddBindingQueue(String queueName,String exchangName,String routingKey)
   {
       try {
-          mModel.queueBind("signin-queue", "bcsb-exchange", routingKey);
+          mModel.queueBind(queueName, exchangName, routingKey);
       } catch (IOException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -197,6 +184,32 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
       };
       thread.start();
   }
+
+    private void ConsumeMarkDataMessage()
+    {
+        Thread thread = new Thread()
+        {
+            @Override
+            public void run() {
+                while(markDataConsumerRunning){
+                    QueueingConsumer.Delivery delivery;
+                    try {
+                        delivery = MyMarkDataSubscription.nextDelivery();//DG当前线程被阻塞，直到有消息来到
+                        mLastMarkDataMessage = delivery.getBody();
+                        mMessageHandler.post(mReturnMarkDataMessage);//通过handler将消息处理线程抛回主线程
+                        try {
+                            mModel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (InterruptedException ie) {
+                        ie.printStackTrace();
+                    }
+                }
+            }
+        };
+        thread.start();
+    }
 
 /*  public void dispose(){
       Running = false;

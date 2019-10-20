@@ -4,7 +4,7 @@ import com.huasun.display.database.UserProfile;
 
 public interface ISignListener {
     //分别为登录和注册成功的回调
-    void onSignInSuccess(int index, UserProfile userProfile);
+    void onSignInSuccess(int index, String command);
     void onSignUpSuccess();
     void onSignInError(String msg);
     void onSignUpError(String msg);
