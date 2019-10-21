@@ -29,7 +29,7 @@ import com.huasun.display.recycler.MultipleItemEntity;
  * Description:
  靶纸规格：
  *ｃｘ位置为５０％位置
- * ｃｙ位置为６０％
+ * cｙ位置为６０％
  */
 public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
@@ -56,7 +56,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     /**
      * 圆的直径
      */
-    private int mRadius;
+    private int mDiameter;
 
     private Paint mRingPaint;
     /**
@@ -68,25 +68,29 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
      */
     private Paint mTextTenPaint;
 
-    private Paint mMarkPaint;
+    private Paint mMarkRingPaint;
+
+    private Paint mMarkTextPaint;
     /**
      * 控件的中心位置
      */
-    private int mCenter;
+    private float mCenter;
     /**
      * 靶心的x坐标位置
      */
-    private int cx;
+    private float cx;
     /**
      * 靶心的y坐标位置
      */
-    private int cy;
+    private float cy;
     /**
      * 环间距，10环的半径
      */
-    private int radiusUnit;
+    private float radiusUnit;
 
     private float radiusUnitRatio=0.1f;
+    private float differenceRatio;
+
      /**
      * 背景图的bitmap
      */
@@ -96,10 +100,13 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
      * 文字的大小
      */
     private float mTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 40, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
 
     private float mMarkTextSize = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics());
+
+    private float mMarkRingRadius = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics());
 
     public MarkDisplay(Context context) {
         super(context);
@@ -126,15 +133,20 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         Log.d("width", width+"");
 
         // 获取圆形的直径
-        mRadius = width;
+        mDiameter = width;
+
         // 中心点
         mCenter = width / 2;
 
         cx=mCenter;
 
-        cy=(int)((0.6*mRadius)+getPaddingTop());
+        cy=((0.6f*mDiameter)+getPaddingTop());
 
-        radiusUnit=(int)(mRadius*radiusUnitRatio);
+        //mDiameter为最外环的直径， 靶心半径为整个部分的10分之一
+       radiusUnit=(mDiameter*radiusUnitRatio);
+
+        //终端识别图像以靶心的直径为100单位
+        differenceRatio=(float) radiusUnit/100;
         //正方形高宽
         setMeasuredDimension(width, width);
     }
@@ -157,9 +169,16 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         mTextTenPaint.setColor(0xFF000000);
         mTextTenPaint.setTextSize(mTextSize);
         //初始化绘制弹孔的画笔
-        mMarkPaint = new Paint();
-        mMarkPaint.setColor(0xFFFF0000);
-        mMarkPaint.setTextSize(mMarkTextSize);
+        mMarkRingPaint = new Paint();
+        mMarkRingPaint.setColor(0xFFFF0000);
+        mMarkRingPaint.setAntiAlias(true);
+        mMarkRingPaint.setStyle(Paint.Style.STROKE);
+        mMarkRingPaint.setStrokeWidth((float) 2.0); //线宽
+        mMarkRingPaint.setDither(true);
+
+        mMarkTextPaint=new Paint();
+        mMarkTextPaint.setColor(0xFFFF0000);
+        mMarkTextPaint.setTextSize(mMarkTextSize);
         // 开启线程
         isRunning = true;
         t = new Thread(this);
@@ -202,7 +221,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
                 drawRings(mCanvas);
                 drawRingNumber(mCanvas);
                 if(markJson!=null&&!markJson.isEmpty()){
-                    drawMark();//
+                    drawMark(mCanvas);//
                 }
             }
         } catch (Exception e) {
@@ -213,7 +232,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         }
 
     }
-    private void drawMark() {
+    private void drawMark(Canvas canvas) {
         final JSONArray dataArray = JSON.parseObject(markJson).getJSONArray("data");
         final int size = dataArray.size();
         for (int i = 0; i < size; i++) {
@@ -221,7 +240,15 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             final int id = data.getInteger("id");
             final float r = data.getFloat("r");
             final float theta = data.getFloat("theta");
+            Rect rect = new Rect();
+            mMarkTextPaint.getTextBounds(id+"",0,(id+"").length(),rect);
+            int textWidth=rect.width();
+            int textHeight=rect.height();
 
+            float x= (float) (cx+r*differenceRatio*Math.sin(theta));
+            float y= (float) (cy+r*differenceRatio*Math.cos(theta));
+            mCanvas.drawCircle(x,y,mMarkRingRadius,mMarkRingPaint);
+            mCanvas.drawText(id+"",x-(float) textWidth/2,y-mMarkRingRadius-(float) textHeight/5,mMarkTextPaint);
 
         }
 
@@ -235,11 +262,11 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             mTextPaint.getTextBounds(text,0,text.length(),rect);
             int textWidth=rect.width();
             int textHeight=rect.height();
-            Log.d("markjson",markJson+"");
             if(i==4){
-                mCanvas.drawText(text, (radiusUnit / 2 + spaceTimes * radiusUnit - textWidth / 2), cy + textHeight / 2, mTextTenPaint);
+                mCanvas.drawText(text, ((float) radiusUnit/2 + spaceTimes * radiusUnit - (float) textWidth/2), cy + textHeight / 2, mTextTenPaint);
+                Log.d("width",((float) radiusUnit/2 + spaceTimes * radiusUnit - (float) textWidth/2)+"");
             }else {
-                mCanvas.drawText(text, (radiusUnit / 2 + spaceTimes * radiusUnit - textWidth / 2), cy + textHeight / 2, mTextPaint);
+                mCanvas.drawText(text, ((float)radiusUnit /2 + spaceTimes * radiusUnit - (float) textWidth /2), cy + textHeight / 2, mTextPaint);
             }
         }
     }

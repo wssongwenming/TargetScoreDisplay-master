@@ -152,7 +152,7 @@ public class MarkDelegate extends BottomItemDelegate {
 
                      if( mTvPersonData!=null) {
                          LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();
-                         lp.setMargins(30, -(llcPersonDataHeight + srlMarkHeight + 20 + tvPersonDataHeight / 2), 0, 0);
+                         lp.setMargins(30, -(llcPersonDataHeight + srlMarkHeight + 2 + tvPersonDataHeight / 2), 0, 0);
                          mTvPersonData.setLayoutParams(lp);
                      }
                      return true;
