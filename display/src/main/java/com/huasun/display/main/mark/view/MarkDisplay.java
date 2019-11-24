@@ -103,7 +103,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
 
     private float mMarkTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 14, getResources().getDisplayMetrics());
 
     private float mMarkRingRadius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics());
@@ -145,7 +145,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         //mDiameter为最外环的直径， 靶心半径为整个部分的10分之一
        radiusUnit=(mDiameter*radiusUnitRatio);
 
-        //终端识别图像以靶心的直径为100单位
+        //终端识别图像以靶心的径为100单位
         differenceRatio=(float) radiusUnit/100;
         //正方形高宽
         setMeasuredDimension(width, width);
@@ -172,7 +172,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         mMarkRingPaint = new Paint();
         mMarkRingPaint.setColor(0xFFFF0000);
         mMarkRingPaint.setAntiAlias(true);
-        mMarkRingPaint.setStyle(Paint.Style.STROKE);
+        mMarkRingPaint.setStyle(Paint.Style.FILL);
         mMarkRingPaint.setStrokeWidth((float) 2.0); //线宽
         mMarkRingPaint.setDither(true);
 
@@ -233,22 +233,31 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
 
     }
     private void drawMark(Canvas canvas) {
-        final JSONArray dataArray = JSON.parseObject(markJson).getJSONArray("data");
+        final JSONObject markObject=JSON.parseObject(markJson);
+        float radius=Float.parseFloat(markObject.getString("radius"));
+
+        differenceRatio=(float) radiusUnit/radius;
+        final JSONArray dataArray = markObject.getJSONArray("holes");
+
         final int size = dataArray.size();
         for (int i = 0; i < size; i++) {
             final JSONObject data = dataArray.getJSONObject(i);
             final int id = data.getInteger("id");
-            final float r = data.getFloat("r");
-            final float theta = data.getFloat("theta");
+            //final float r = data.getFloat("r");
+            final float x=data.getFloat("px");
+            final float y=data.getFloat("py");
+            //final float theta = data.getFloat("theta");
             Rect rect = new Rect();
             mMarkTextPaint.getTextBounds(id+"",0,(id+"").length(),rect);
             int textWidth=rect.width();
             int textHeight=rect.height();
 
-            float x= (float) (cx+r*differenceRatio*Math.sin(theta));
-            float y= (float) (cy+r*differenceRatio*Math.cos(theta));
-            mCanvas.drawCircle(x,y,mMarkRingRadius,mMarkRingPaint);
-            mCanvas.drawText(id+"",x-(float) textWidth/2,y-mMarkRingRadius-(float) textHeight/5,mMarkTextPaint);
+            //float x= (float) (cx+r*differenceRatio*Math.sin(theta));
+            //float y= (float) (cy+r*differenceRatio*Math.cos(theta))
+            float X=cx+x*differenceRatio;
+            float Y=cy-y*differenceRatio;
+            mCanvas.drawCircle(X,Y,mMarkRingRadius,mMarkRingPaint);
+            mCanvas.drawText(id+"",X-(float) textWidth/2,Y-mMarkRingRadius-(float) textHeight/5,mMarkTextPaint);
 
         }
 

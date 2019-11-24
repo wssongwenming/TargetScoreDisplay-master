@@ -118,7 +118,7 @@ public class MarkDelegate extends BottomItemDelegate {
         mGun.setText(commandJson.getString("shooting_gun"));
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
         mGroupNumber.setText(commandJson.getString("group_number"));
-        mTargetNumber.setText(commandJson.getString("target_number"));
+        mTargetNumber.setText(commandJson.getString("target_number"));//靶位编号
     }
 
     private void initRecyclerView() {
@@ -151,8 +151,8 @@ public class MarkDelegate extends BottomItemDelegate {
                      }
 
                      if( mTvPersonData!=null) {
-                         LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();
-                         lp.setMargins(30, -(llcPersonDataHeight + srlMarkHeight + 2 + tvPersonDataHeight / 2), 0, 0);
+                         LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();//
+                         lp.setMargins(10, -(llcPersonDataHeight + srlMarkHeight  + tvPersonDataHeight-10), 0, 0);
                          mTvPersonData.setLayoutParams(lp);
                      }
                      return true;

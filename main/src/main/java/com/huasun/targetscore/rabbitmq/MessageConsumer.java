@@ -17,12 +17,12 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
   }
   //The Queue name for command consumer
   private String mCommandQueue;
-  private QueueingConsumer MyCommandSubscription;
+  private QueueingConsumer MyCommandSubscription;//命令消费者
   //last message to post back
   private byte[] mLastCommandMessage;
   //射击成绩数据
   private String mMarkDataQueue;
-  private QueueingConsumer MyMarkDataSubscription;
+  private QueueingConsumer MyMarkDataSubscription;//靶环数据消费者
   private byte[]mLastMarkDataMessage;
 
 
@@ -60,16 +60,17 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
       }
   };
 
-  final Runnable mConsumeCommandRunner = new Runnable() {
-      public void run() {
-          ConsumeCommandMessage();
-      }
-  };
     final Runnable mReturnMarkDataMessage = new Runnable() {
         public void run() {
             mOnReceiveMarkDataHandler.onReceiveMessage(mLastMarkDataMessage);
         }
     };
+
+    final Runnable mConsumeCommandRunner = new Runnable() {
+      public void run() {
+          ConsumeCommandMessage();
+      }
+  };
 
   final Runnable mConsumeMarkDataRunner=new Runnable() {
       @Override
@@ -90,7 +91,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
              mCommandQueue = mModel.queueDeclare(queueName,true,false,false,null).getQueue();
 
              MyCommandSubscription = new QueueingConsumer(mModel);
-
+             // 将消费者绑定到队列，并设置手动确认消息（即无需显示确认，如何设置请慎重考虑）
              mModel.basicConsume(mCommandQueue, false, MyCommandSubscription);
 
           } catch (IOException e) {
