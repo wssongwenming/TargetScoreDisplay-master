@@ -10,9 +10,10 @@
         android:background="#ececec"
         android:layout_height="40dp">
         <TextView
+            android:id="@+id/tv_time"
             android:textSize="20sp"
             android:textColor="@color/light_black"
-            android:text="成绩显示"
+            android:text="2019年10月19日-某某靶场"
             android:paddingTop="6dp"
             android:gravity="center"
             android:layout_width="match_parent"
@@ -147,6 +148,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1">
                     <TextView
+
                         android:layout_width="wrap_content"
                         android:textColor="@color/black"
                         android:textSize="20sp"
@@ -243,13 +245,15 @@
 
 
     </android.support.v7.widget.LinearLayoutCompat>
-
-    <TextView
-            android:textSize="20sp"
-            android:textColor="@color/light_black"
-            android:text="2019年10月19日-某某靶场"
-            android:gravity="center"
+    <Button
+        android:id="@+id/btn_finish_shooting"
+        android:text="打靶完毕"
+        android:layout_marginTop="5dp"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:textColor="@color/black"
         android:background="#ececec"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"/>
+        android:layout_height="wrap_content" />
 </android.support.v7.widget.LinearLayoutCompat>

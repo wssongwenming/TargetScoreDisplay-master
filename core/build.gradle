@@ -94,7 +94,8 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:4.0.0-RC0'
     compile 'com.github.bumptech.glide:okhttp3-integration:4.0.0-RC0@aar'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
-
+    //第三方漂亮的提示框
+    compile 'com.github.f0ris.sweetalert:library:1.5.1'
 
 
 

@@ -52,7 +52,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
     private String[] mRingNumbers = new String[]{"6", "7", "8", "9", "10", "9","8","7","6"};
     private float[] mSpaceTimes= new float[]{0,1,2,3,4.5f,6,7,8,9};
 
-    private int mRingConunt=5;
+    private int mRingConunt=6;
     /**
      * 圆的直径
      */

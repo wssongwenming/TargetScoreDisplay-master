@@ -69,7 +69,6 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
     }*/
 
     public void initData (String json){
-                        final JSONObject object= JSON.parseObject(json);
                         mAdapter=MultipleRecyclerAdapter.create(CONVERTER.setJsonData(json));
                         mAdapter.setOnLoadMoreListener(RefreshHandler.this,RECYCLERVIEW);
                         RECYCLERVIEW.setAdapter(mAdapter);

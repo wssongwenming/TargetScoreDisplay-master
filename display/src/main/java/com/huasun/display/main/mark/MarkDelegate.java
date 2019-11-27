@@ -1,10 +1,12 @@
 package com.huasun.display.main.mark;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.TextViewCompat;
+import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -13,27 +15,44 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.hmy.popwindow.PopItemAction;
+import com.hmy.popwindow.PopWindow;
+import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
+import com.huasun.core.net.RestClient;
+import com.huasun.core.net.callback.ISuccess;
 import com.huasun.display.R;
 import com.huasun.display.R2;
 import com.huasun.display.database.UserProfile;
 import com.huasun.display.main.mark.view.MarkDisplay;
+import com.huasun.display.recycler.MultipleFields;
 import com.huasun.display.recycler.MultipleItemEntity;
+import com.huasun.display.recycler.MultipleRecyclerAdapter;
 import com.huasun.display.refresh.PagingBean;
 import com.huasun.display.refresh.RefreshHandler;
 import com.huasun.display.sign.ISignListener;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -73,6 +92,34 @@ public class MarkDelegate extends BottomItemDelegate {
     EditText mTargetNumber=null;
     @BindView(R2.id.edit_group_number)
     EditText mGroupNumber=null;
+    @BindView(R2.id.tv_time)
+    TextView mTime=null;
+    @OnClick(R2.id.btn_finish_shooting)
+    void onClickSignIn(){
+        int bulletCount=Integer.parseInt(mBullet.getText().toString());//获得子弹数目
+        final View customView = View.inflate((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), R.layout.finish_shooting_summary, null);//获得弹出框里要放的view
+        AppCompatTextView textView=customView.findViewById(R.id.tv_shoot_mark);
+        MultipleRecyclerAdapter multipleRecyclerAdapter= (MultipleRecyclerAdapter)mRecyclerView.getAdapter();
+        double ringSum= (float) 0.0;
+
+        if(multipleRecyclerAdapter!=null) {
+            List<MultipleItemEntity> entityList = multipleRecyclerAdapter.getData();
+            int count = entityList.size();
+            for (int i = 1; i < count; i++) {
+                ringSum = ringSum + Double.parseDouble(entityList.get(i).getField(MultipleFields.RINGNUMBER).toString());
+            }
+        }
+        textView.setText("您的打靶总成绩为："+ringSum+"环,平均成绩为："+ringSum/bulletCount+"环");
+        PopWindow popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
+                .setStyle(PopWindow.PopWindowStyle.PopUp)
+                .setTitle("打靶成绩报告")
+                .addContentView(customView)
+                .addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Cancel))
+                .create();
+        popWindow.show();
+
+
+    }
     private String command;
     public RefreshHandler mRefreshHandler;
     private void initRefreshLayout(){
@@ -112,6 +159,9 @@ public class MarkDelegate extends BottomItemDelegate {
         this.markJson=markJson;
     }
     public void initBasicData(String command) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        mTime.setText(format.format(date));
         final JSONObject commandJson= JSON.parseObject(command).getJSONObject("data");
         mName.setText(commandJson.getString("name"));
         mDepartment.setText(commandJson.getString("department"));
@@ -175,4 +225,6 @@ public class MarkDelegate extends BottomItemDelegate {
     public MarkDisplay getMarkDisplay() {
         return markDisplay;
     }
+
+
 }
