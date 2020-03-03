@@ -69,6 +69,7 @@ public class MarkDelegate extends BottomItemDelegate {
     int llcPersonDataHeight=0;
     int tvPersonDataHeight=0;
     int srlMarkHeight=0;
+    private String targetNumber="";
     String markJson="";
     @BindView(R2.id.surface_pan)
     MarkDisplay markDisplay=null;
@@ -114,7 +115,13 @@ public class MarkDelegate extends BottomItemDelegate {
                 .setStyle(PopWindow.PopWindowStyle.PopUp)
                 .setTitle("打靶成绩报告")
                 .addContentView(customView)
-                .addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Cancel))
+                //.addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Cancel))
+                .addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
+                    @Override
+                    public void onClick() {
+                        Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
+                    }
+                }))
                 .create();
         popWindow.show();
 
@@ -169,6 +176,7 @@ public class MarkDelegate extends BottomItemDelegate {
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
         mGroupNumber.setText(commandJson.getString("group_number"));
         mTargetNumber.setText(commandJson.getString("target_number"));//靶位编号
+        targetNumber=commandJson.getString("target_number");//将靶位编号取出打靶完毕后，用于将打靶完毕信息返回给ｓｅｒｖｅｒ
     }
 
     private void initRecyclerView() {
@@ -225,6 +233,4 @@ public class MarkDelegate extends BottomItemDelegate {
     public MarkDisplay getMarkDisplay() {
         return markDisplay;
     }
-
-
 }

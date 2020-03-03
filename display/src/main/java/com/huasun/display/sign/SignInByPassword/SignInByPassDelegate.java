@@ -6,11 +6,16 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.config.ServerConfig;
+import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
 import com.huasun.core.net.RestClient;
@@ -49,7 +54,8 @@ public class SignInByPassDelegate extends BottomItemDelegate {
     void onClickSignIn(){
         if(checkForm()){
             RestClient.builder()
-                    .url("http://192.168.1.3:8081/Web01_exec/UserLogin")
+                    //.url("http://192.168.1.3:8081/Web01_exec/UserLogin")
+                    .url("http://192.168.1.3:8080/sys/trainee/login")
                     .params("id",mId.getText().toString())
                     .params("password",mPassword.getText().toString())
                     .success(new ISuccess() {
@@ -62,6 +68,12 @@ public class SignInByPassDelegate extends BottomItemDelegate {
                     .post();
         }
     }
+
+    private static final RequestOptions REQUEST_OPTIONS=
+            new RequestOptions()
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate();
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -77,13 +89,14 @@ public class SignInByPassDelegate extends BottomItemDelegate {
                 final String name = data.getString("name");
                 final String department = data.getString("department");
                 final String password = data.getString("password");//登陆者的密码，一般为空，有时不需输入时可以输入默认的密码
-                final String photopath=data.getString("photopath");//登陆者的图片路径
+                final String photopath=ServerConfig.API_SERVER+data.getString("photopath");//登陆者的图片路径
                 mId.setText(id+"");
                 mName.setText(name);
                 mDepartment.setText(department);
                 mPassword.setText(password);
                 Glide.with(getContext())
                         .load(photopath)
+                        .apply(REQUEST_OPTIONS)
                         .into(mPhoto);
 
             }

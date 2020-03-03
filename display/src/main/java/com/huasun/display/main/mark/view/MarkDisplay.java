@@ -103,7 +103,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
 
     private float mMarkTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 14, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 18, getResources().getDisplayMetrics());
 
     private float mMarkRingRadius = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics());
@@ -177,7 +177,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         mMarkRingPaint.setDither(true);
 
         mMarkTextPaint=new Paint();
-        mMarkTextPaint.setColor(0xFFFF0000);
+        mMarkTextPaint.setColor(0xFFFFD700);
         mMarkTextPaint.setTextSize(mMarkTextSize);
         // 开启线程
         isRunning = true;
@@ -254,8 +254,8 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
 
             //float x= (float) (cx+r*differenceRatio*Math.sin(theta));
             //float y= (float) (cy+r*differenceRatio*Math.cos(theta))
-            float X=cx+x*differenceRatio;
-            float Y=cy-y*differenceRatio;
+            float X=cx+x*differenceRatio;//返回的坐标x应该以靶心左为负数，
+            float Y=cy-y*differenceRatio;//y应该以靶心向下为负数
             mCanvas.drawCircle(X,Y,mMarkRingRadius,mMarkRingPaint);
             mCanvas.drawText(id+"",X-(float) textWidth/2,Y-mMarkRingRadius-(float) textHeight/5,mMarkTextPaint);
 

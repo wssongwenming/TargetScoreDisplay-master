@@ -83,13 +83,14 @@ public abstract class IConnectToRabbitMQ {
           mModel = mConnection.createChannel();
           mModel.basicQos(1);
           //创建一个的交换器
-          mModel.exchangeDeclare(mExchange, MyExchangeType, true);
+            //exchangeDeclare(String exchange, String type, boolean durable, boolean autoDelete,
+            //                                       Map<String, Object> arguments) throws IOException;
+          mModel.exchangeDeclare(mExchange, MyExchangeType, true, false, null);
 
           return true;
         }
         catch (Exception e)
         {
-
       	    e.printStackTrace();
             Latte.getHandler().post(new Runnable() {
                 @Override

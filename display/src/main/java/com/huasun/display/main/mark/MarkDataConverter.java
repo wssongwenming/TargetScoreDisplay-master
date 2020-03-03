@@ -42,7 +42,7 @@ public class MarkDataConverter extends DataConverter {
                 final String ringNumber = data.getString("score");
                 final String offset = data.getString("offset");
                 final String offsetDirection=offset.equalsIgnoreCase("u")? "上":(offset.equalsIgnoreCase("d")?"下":(offset.equalsIgnoreCase("l")?"左":(offset.equalsIgnoreCase("r")?"右":(offset.equalsIgnoreCase("lu")?"左上":(offset.equalsIgnoreCase("ru")?"右上":(offset.equalsIgnoreCase("ld")?"左下":(offset.equalsIgnoreCase("rd")?"右下":"未知")))))));
-                final String shootingTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                final String shootingTime = data.getString("shootingTime");
                 int type = ItemType.TEXT_TEXT;
                 final MultipleItemEntity entity = MultipleItemEntity.builder()
                         .setFiled(MultipleFields.ID, id)

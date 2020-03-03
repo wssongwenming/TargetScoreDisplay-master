@@ -88,7 +88,8 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
      if(super.connectToRabbitMQ())
      {
          try {
-             mCommandQueue = mModel.queueDeclare(queueName,true,false,false,null).getQueue();
+             //queueDeclare (String queue , boolean durable , boolean exclusive , boolean autoDelete , Map arguments)
+             mCommandQueue = mModel.queueDeclare(queueName,false,false,false,null).getQueue();
 
              MyCommandSubscription = new QueueingConsumer(mModel);
              // 将消费者绑定到队列，并设置手动确认消息（即无需显示确认，如何设置请慎重考虑）
@@ -98,11 +99,11 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
               e.printStackTrace();
               return false;
           }
-           if (MyExchangeType == "topic")
+           if (MyExchangeType == "topic"||MyExchangeType == "direct")
                  AddBindingQueue(queueName,exchangeName,routingKey);
 
          commandConsumerRunning = true;
-          mConsumeHandler.post(mConsumeCommandRunner);//在一个新的线程里开启消息阻塞获取模式
+         mConsumeHandler.post(mConsumeCommandRunner);//一连接然后在一个新的线程里开启消息阻塞获取模式
          return true;
      }
      return false;
@@ -113,7 +114,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
         if(super.connectToRabbitMQ())
         {
             try {
-                mMarkDataQueue =mModel.queueDeclare(queueName,true,false,false,null).getQueue();
+                mMarkDataQueue =mModel.queueDeclare(queueName,false,false,false,null).getQueue();
 
                 MyMarkDataSubscription = new QueueingConsumer(mModel);
 
@@ -123,7 +124,7 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
                 e.printStackTrace();
                 return false;
             }
-            if (MyExchangeType == "topic")
+            if (MyExchangeType == "topic"||MyExchangeType == "direct")
                 AddBindingQueue(queueName,exchangeName,routingKey);//fanout has default binding
 
             markDataConsumerRunning = true;
@@ -210,6 +211,11 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
             }
         };
         thread.start();
+    }
+    enum Action {
+        ACCEPT,  // 处理成功
+        RETRY,   // 可以重试的错误
+        REJECT,  // 无需重试的错误
     }
 
 /*  public void dispose(){

@@ -20,7 +20,6 @@ import okhttp3.Interceptor;
 public class Configurator {
     private static final HashMap<Object,Object> LATTE_CONFIGS=new HashMap<>();
     private static final ArrayList<IconFontDescriptor> ICONS= new ArrayList<>();
-    private static  int SignInWay=-1;
     private static final ArrayList<Interceptor> INTERCEPTORS=new ArrayList<>();
     private static final Handler HANDLER=new Handler();
 
