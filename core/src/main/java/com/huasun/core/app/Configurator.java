@@ -3,12 +3,12 @@ package com.huasun.core.app;
 import android.app.Activity;
 import android.os.Handler;
 
+import com.huasun.core.rabbitmq.MessageConsumer;
 import com.joanzapata.iconify.IconFontDescriptor;
 import com.joanzapata.iconify.Iconify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.WeakHashMap;
 
 import okhttp3.Interceptor;
 
@@ -52,6 +52,13 @@ public class Configurator {
         return this;
     }
 
+    public final Configurator withMessageConsumer(MessageConsumer messageConsumer)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.MESSAGECONSUMER,messageConsumer);
+        return this;
+    }
+
+
     public final Configurator withCommand(int command){
         LATTE_CONFIGS.put(ConfigKeys.COMMAND,command);
         return this;
@@ -70,6 +77,8 @@ public class Configurator {
         LATTE_CONFIGS.put(ConfigKeys.INTERCEPTOR,INTERCEPTORS);
         return this;
     }
+
+
 
     private final Configurator withInterceptors(ArrayList<Interceptor> interceptors){
         INTERCEPTORS.addAll(interceptors);

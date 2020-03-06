@@ -6,32 +6,26 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatTextView;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.bcsb.rabbitmq.entity.Command;
 import com.huasun.core.activities.ProxyActivity;
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
+
+import com.huasun.core.rabbitmq.MessageConsumer;
 import com.huasun.core.ui.launcher.ILauncherListener;
 import com.huasun.core.ui.launcher.OnLauncherFinishTag;
 import com.huasun.core.util.ActivityManager;
 import com.huasun.core.util.DataCleanManager;
-import com.huasun.display.database.UserProfile;
+import com.huasun.display.entity.MessagetoServer;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.IMarkAttachListener;
 import com.huasun.display.main.mark.MarkDelegate;
@@ -40,56 +34,38 @@ import com.huasun.display.sign.ISignListener;
 import com.huasun.display.sign.SignInBottomDelegate;
 import com.huasun.display.sign.SignInByFace.SignInByFaceRecDelegate;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
-import com.huasun.targetscore.rabbitmq.MessageConsumer;
-import com.rabbitmq.client.AMQP;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.QueueingConsumer;
 
-import org.json.JSONArray;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.Locale;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener{
 
     private ConnectionFactory factory = new ConnectionFactory();// 声明ConnectionFactory对象
-    Thread subscribeThread;
 
     private MarkDelegate markDelegate;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
-
+    private MessageConsumer mConsumer;
     private String server="192.168.1.3";
-
-    private String exchange_name = "server-to-other-exchange";
-
+    private String exchange_name = "server-to-display-exchange";
     private String exchange_type="topic";
-
-    private String commandQueueName="";
-    private String commandRoutingKey="";
-
-    private String markDataQueueName="";
-    private String markDataRoutingKey="";
     private int port=5672;
     private String username="client";
     private String password="client";
+
+
+    private String queueName="";
+    private String routingKey="";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,91 +75,82 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             actionBar.hide();
         }
         Latte.getConfigurator().withActivity(this);
-
         String mac=getMac(this);
+        queueName="server-to-display-queue-"+mac;
+        routingKey="server-to-display-routing-key-"+mac;
 
-        commandQueueName="server-to-display-commandqueue-"+mac;
-        commandRoutingKey="server-to-display-command-routing-key-"+mac;
-        markDataQueueName="server-to-display-markdataqueue-"+mac;
-        markDataRoutingKey="server-to-display-markdata-routing-key-"+mac;
-        //连接设置
-        setupConnectionFactory();
-
-        //用于从线程中获取数据，更新ui
-        final Handler incomingMessageHandler = new Handler() {
+        //开始消息队列
+        //mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
+        mConsumer=Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
+        new consumerconnect().execute();
+        mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
+            @TargetApi(Build.VERSION_CODES.O)
             @Override
-            public void handleMessage(Message msg) {
-                String message = msg.getData().getString("msg");
-                final JSONObject command= JSON.parseObject( message);
-                int dataType=command.getInteger("dataType");
-                Latte.getConfigurator().withCommand(dataType);
-                if(dataType==4){//完毕退出
-                    DataCleanManager.cleanApplicationData((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY));
-                    ActivityManager.getInstance().finishActivitys();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                    System.exit(0);
-                }else if(dataType==0){
-                    startWithPop(new LauncherDelegate());
-                }
-                else if(dataType==1){
-                    Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"ok",Toast.LENGTH_LONG).show();
-                    startWithPop(SignInByPassDelegate.newInstance(message));
-                }else if(dataType==2){
-                    startWithPop(SignInByFaceRecDelegate.newInstance(message));
-                }else if(dataType==3){//不会直接走，
-                    startWithPop(MarkDelegate.newInstance(message));
-                }else if(dataType==5){
-                    if(markDelegate!=null){
-                        MarkDisplay markDisplay=markDelegate.getMarkDisplay();
-                        if(markDisplay!=null) {
-                            markDisplay.setMarkJson(message);
-                            markDelegate.mRefreshHandler.initData(message);
-                        }
+            public void onReceiveMessage(byte[] text) {
+                String message = "";
+                try {
+                    message = new String(text, "UTF8");
+                    final JSONObject command= JSON.parseObject( message);
+                    int dataType=command.getInteger("dataType");
+                    Latte.getConfigurator().withCommand(dataType);
+                    if(dataType==DataType.EXIT.getCode()){//完毕退出
+                        DataCleanManager.cleanApplicationData((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY));
+                        ActivityManager.getInstance().finishActivitys();
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(0);
+                    }else if(dataType==DataType.LAUNCH.getCode()){
+                        startWithPop(new LauncherDelegate());
                     }
+                    else if(dataType==DataType.SIGNINBYPASS.getCode()){
+                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"ok",Toast.LENGTH_LONG).show();
+                        startWithPop(SignInByPassDelegate.newInstance(message));
+                    }else if(dataType==DataType.SIGNINBYFACE.getCode()){
+                        startWithPop(SignInByFaceRecDelegate.newInstance(message));
+                    }else if(dataType==DataType.STARTSHOOTING.getCode()){//不会直接走，
+                        startWithPop(MarkDelegate.newInstance(message));
+                    }else if(dataType==DataType.MARK_DATA.getCode()){
+                        if(markDelegate!=null){
+                            MarkDisplay markDisplay=markDelegate.getMarkDisplay();
+                            if(markDisplay!=null) {
+                                markDisplay.setMarkJson(message);
+                                markDelegate.mRefreshHandler.initData(message);
+                            }
+                        }
+                    }else if(dataType==DataType.DEVICESTATUS.getCode()){
+                        //TODO 回复Display状态
+
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
             }
-        };
-        //开启消费者线程
-        subscribe(incomingMessageHandler);
-
-
-
-
+        });
     }
     @Override
     public LatteDelegate setRootDelegate() {
         return new LauncherDelegate();
-
     }
-
     @Override
     public void onSignInSuccess(int index, String command) {
         startWithPop(new LauncherDelegate());
     }
-
     @Override
     public void onSignUpSuccess() {
         Toast.makeText(this,"登陆成功",Toast.LENGTH_LONG).show();
     }
-
     @Override
     public void onSignInError(String msg){
     }
-
     @Override
     public void onSignUpError(String msg) {
     }
-
     @Override
     public void onSignInFailure(String msg) {
-
     }
-
     @Override
     public void onSignUpFailure(String msg) {
-
     }
-     @Override
+    @Override
     public void onLauncherFinish(OnLauncherFinishTag tag) {
         switch (tag){
             case SIGNIN_BY_PASS:
@@ -212,81 +179,33 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         return markDelegate;
     }
 
+    private class consumerconnect extends AsyncTask<String, Void, Void> {
 
-    /**
-     * 连接设置
-     */
-    private void setupConnectionFactory() {
-        factory.setHost(server);
-        factory.setPort(5672);
-        factory.setUsername("client");
-        factory.setPassword("client");
-    }
+        @Override
+        protected Void doInBackground(String... Message) {
+            try {
+                // Connect to broker
+                mConsumer.connectToRabbitMQ(queueName,exchange_name,routingKey);
 
-    /**
-     * 消费者线程
-     */
-    void subscribe(final Handler handler) {
-        subscribeThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        //使用之前的设置，建立连接
-                        Connection connection = factory.newConnection();
-                        //创建一个通道
-                        Channel channel = connection.createChannel();
-                        //一次只发送一个，处理完成一个再获取下一个
-                        channel.basicQos(1);
-                        //exchangeDeclare(String exchange, String type, boolean durable, boolean autoDelete,Map<String, Object> arguments) throws IOException;
-                        channel.exchangeDeclare(exchange_name, exchange_type, true, false, null);
-                        //queueDeclare (String queue , boolean durable , boolean exclusive , boolean autoDelete , Map arguments)
-                        AMQP.Queue.DeclareOk q = channel.queueDeclare(commandQueueName,false,false,true,null);
-                        //queueDeclare (String queue , boolean durable , boolean exclusive , boolean autoDelete , Map arguments)
-                        AMQP.Queue.DeclareOk p = channel.queueDeclare(markDataQueueName,false,false,true,null);
-                        //将队列绑定到消息交换机exchange上
-                        //                  queue         exchange              routingKey路由关键字，exchange根据这个关键字进行消息投递。
-                        channel.queueBind(q.getQueue(), exchange_name, commandRoutingKey);
-                        channel.queueBind(q.getQueue(), exchange_name, markDataRoutingKey);
-
-                        //创建消费者
-                        QueueingConsumer consumer = new QueueingConsumer(channel);
-                        channel.basicConsume(q.getQueue(), true, consumer);
-                        channel.basicConsume(p.getQueue(), true, consumer);
-
-                        while (true) {
-                            //wait for the next message delivery and return it.
-                            QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                            String message = new String(delivery.getBody());
-
-                            Log.d("", "[r] " + message);
-
-                            //从message池中获取msg对象更高效
-                            Message msg = handler.obtainMessage();
-                            Bundle bundle = new Bundle();
-                            bundle.putString("msg", message);
-                            msg.setData(bundle);
-                            handler.sendMessage(msg);
-                        }
-                    } catch (InterruptedException e) {
-                        break;
-                    } catch (Exception e1) {
-                        Log.d("", "Connection broken: " + e1.getClass().getName());
-                        try {
-                            Thread.sleep(5000); //sleep and then try again
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                }
+            } catch (Exception e) {
+                // TODO: handle exception
+                e.printStackTrace();
             }
-        });
-        subscribeThread.start();
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+    }
+    protected void onResume() {
+        super.onResume();
+        new consumerconnect().execute();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        subscribeThread.interrupt();
+        mConsumer.Dispose();//此处需要认证考虑
+        Toast.makeText(this,"hello",Toast.LENGTH_LONG).show();
+
     }
 
     /**
@@ -382,8 +301,76 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         return mac;
     }
-}
-/*
+    private enum DataType{
+        LAUNCH(0),
+        SIGNINBYPASS(1),
+        SIGNINBYFACE(2),//2
+        STARTSHOOTING(3),//3
+        EXIT(4),//4
+        MARK_DATA(5),//5
+        DEVICESTATUS(6);//6
+        private int code;
+        private DataType(int _code){
+            this.code=_code;
+        }
+        private int getCode() {
+            return code;
+        }
+        @Override
+
+        public String toString() {
+
+            return String.valueOf ( this .code );
+
+        }
+
+    }
+
+   /* private class send extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... Message) {
+            try {
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.setHost(server);
+                factory.setUsername(username);
+                factory.setPassword(password);
+                factory.setPort(port);
+                MessagetoServer message=new MessagetoServer();
+                message.setCode(0);//code=0表示打靶完毕，
+                message.setGroup_index(Integer.parseInt(group_index.trim()));
+                message.setTarget_index(Integer.parseInt(target_index.trim()));
+                message.setTraineeId(traineeId);
+                Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel();
+                channel.basicPublish(exchangeName, routingKey, null,JSONObject.toJSONString(message).getBytes());
+                channel.close();
+                connection.close();
+            } catch (Exception e) {
+                // TODO: handle exception
+                e.printStackTrace();
+            }
+            // TODO Auto-generated method stub
+            return null;
+        }*/
+
+    }
+
+
+
+/*    int LAUNCH_COMMAND = 0;
+
+    int SIGNINBYPASS_COMMAND = 1;
+
+    int SIGNINBYFACE_COMMAND=2;
+
+    int STARTSHOOTING_COMMAND= 3;
+
+    int EXIT_COMMAND = 4;
+
+    int MARK_DATA=5;
+
+    int DEVICESTATUS=6;
 将command和markdata合二为一通过消息类型判断逻辑走向。然后运用同一个channel通道向server// 声明一个队列 -// queue 队列名称
         // durable 为true时server重启队列不会消失 (是否持久化)
         // exclusive 队列是否是独占的，如果为true只能被一个connection使用，其他连接建立时会抛出异常

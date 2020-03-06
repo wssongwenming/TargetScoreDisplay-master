@@ -1,7 +1,6 @@
-package com.huasun.targetscore.rabbitmq;
+package com.huasun.targetscore.rabbitmq1;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.rabbitmq.client.QueueingConsumer;
 
@@ -83,11 +82,12 @@ public class MessageConsumer extends  IConnectToRabbitMQ{
    * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
    */
 
-  public boolean connectToCommandRabbitMQ(String queueName,String exchangeName,String routingKey)
+  public  boolean connectToCommandRabbitMQ(String queueName,String exchangeName,String routingKey)
   {
      if(super.connectToRabbitMQ())
      {
          try {
+
              //queueDeclare (String queue , boolean durable , boolean exclusive , boolean autoDelete , Map arguments)
              mCommandQueue = mModel.queueDeclare(queueName,false,false,false,null).getQueue();
 

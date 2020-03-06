@@ -2,27 +2,18 @@ package com.huasun.display.main.mark;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v4.widget.TextViewCompat;
-import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,26 +24,23 @@ import com.hmy.popwindow.PopWindow;
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
-import com.huasun.core.net.RestClient;
-import com.huasun.core.net.callback.ISuccess;
 import com.huasun.display.R;
 import com.huasun.display.R2;
-import com.huasun.display.database.UserProfile;
+import com.huasun.display.entity.MessagetoServer;
 import com.huasun.display.main.mark.view.MarkDisplay;
 import com.huasun.display.recycler.MultipleFields;
 import com.huasun.display.recycler.MultipleItemEntity;
 import com.huasun.display.recycler.MultipleRecyclerAdapter;
 import com.huasun.display.refresh.PagingBean;
 import com.huasun.display.refresh.RefreshHandler;
-import com.huasun.display.sign.ISignListener;
-import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -64,12 +52,21 @@ import butterknife.OnClick;
  * Description:
  */
 public class MarkDelegate extends BottomItemDelegate {
+    private String server="192.168.1.3";
+    private int port=5672;
+    private String username="client";
+    private String password="client";
+    private String exchangeName="display-to-server-exchange";
+    private String routingKey="display-to-server-routing-key";
+
     private static String COMMAND="COMMAND";
     private ArrayList<MultipleItemEntity> medicineHistoryList=new ArrayList<>();
     int llcPersonDataHeight=0;
     int tvPersonDataHeight=0;
     int srlMarkHeight=0;
-    private String targetNumber="";
+    private String target_index="";
+    private String group_index="";
+    private String traineeId="";
     String markJson="";
     @BindView(R2.id.surface_pan)
     MarkDisplay markDisplay=null;
@@ -119,6 +116,7 @@ public class MarkDelegate extends BottomItemDelegate {
                 .addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
                     @Override
                     public void onClick() {
+                        new send().execute();
                         Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
                     }
                 }))
@@ -176,7 +174,9 @@ public class MarkDelegate extends BottomItemDelegate {
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
         mGroupNumber.setText(commandJson.getString("group_number"));
         mTargetNumber.setText(commandJson.getString("target_number"));//靶位编号
-        targetNumber=commandJson.getString("target_number");//将靶位编号取出打靶完毕后，用于将打靶完毕信息返回给ｓｅｒｖｅｒ
+        target_index=commandJson.getString("target_number");//将靶位编号取出打靶完毕后，用于将打靶完毕信息返回给ｓｅｒｖｅｒ
+        group_index=commandJson.getString("group_number");//\
+        traineeId=commandJson.getString("userId");
     }
 
     private void initRecyclerView() {
@@ -193,31 +193,31 @@ public class MarkDelegate extends BottomItemDelegate {
     public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
         mRefreshHandler=RefreshHandler.create(mRefreshLayout,mRecyclerView,new MarkDataConverter(),new PagingBean());
         ViewTreeObserver observer = mLlcPersonData.getViewTreeObserver();
-         if(observer!=null) {
-             observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                 @Override
-                 public boolean onPreDraw() {
+        if(observer!=null) {
+            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
 
-                     if(mLlcPersonData!=null) {
-                         llcPersonDataHeight = mLlcPersonData.getHeight();
-                     }
-                     if(mTvPersonData!=null) {
-                         tvPersonDataHeight = mTvPersonData.getHeight();
-                     }
-                     if(mRefreshLayout!=null) {
-                         srlMarkHeight = mRefreshLayout.getHeight();
-                     }
+                    if(mLlcPersonData!=null) {
+                        llcPersonDataHeight = mLlcPersonData.getHeight();
+                    }
+                    if(mTvPersonData!=null) {
+                        tvPersonDataHeight = mTvPersonData.getHeight();
+                    }
+                    if(mRefreshLayout!=null) {
+                        srlMarkHeight = mRefreshLayout.getHeight();
+                    }
 
-                     if( mTvPersonData!=null) {
-                         LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();//
-                         lp.setMargins(10, -(llcPersonDataHeight + srlMarkHeight  + tvPersonDataHeight-10), 0, 0);
-                         mTvPersonData.setLayoutParams(lp);
-                     }
-                     return true;
+                    if( mTvPersonData!=null) {
+                        LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();//
+                        lp.setMargins(10, -(llcPersonDataHeight + srlMarkHeight  + tvPersonDataHeight-10), 0, 0);
+                        mTvPersonData.setLayoutParams(lp);
+                    }
+                    return true;
 
-                 }
-             });
-         }
+                }
+            });
+        }
 
     }
     private IMarkAttachListener markAttachListener=null;
@@ -232,5 +232,34 @@ public class MarkDelegate extends BottomItemDelegate {
     }
     public MarkDisplay getMarkDisplay() {
         return markDisplay;
+    }
+    private class send extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... Message) {
+            try {
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.setHost(server);
+                factory.setUsername(username);
+                factory.setPassword(password);
+                factory.setPort(port);
+                MessagetoServer message=new MessagetoServer();
+                message.setCode(0);//code=0表示打靶完毕，
+                message.setGroup_index(Integer.parseInt(group_index.trim()));
+                message.setTarget_index(Integer.parseInt(target_index.trim()));
+                message.setTraineeId(traineeId);
+                Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel();
+                channel.basicPublish(exchangeName, routingKey, null,JSONObject.toJSONString(message).getBytes());
+                channel.close();
+                connection.close();
+            } catch (Exception e) {
+                // TODO: handle exception
+                e.printStackTrace();
+            }
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 }
