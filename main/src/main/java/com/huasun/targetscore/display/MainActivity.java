@@ -48,40 +48,39 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
-public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener{
+public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener {
 
     private ConnectionFactory factory = new ConnectionFactory();// 声明ConnectionFactory对象
 
     private MarkDelegate markDelegate;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
     private MessageConsumer mConsumer;
-    private String server="192.168.1.3";
+    private String server = "192.168.1.3";
     private String exchange_name = "server-to-display-exchange";
-    private String exchange_type="topic";
-    private int port=5672;
-    private String username="client";
-    private String password="client";
+    private String exchange_type = "topic";
+    private int port = 5672;
+    private String username = "client";
+    private String password = "client";
 
-
-    private String queueName="";
-    private String routingKey="";
+    private String queueName = "";
+    private String routingKey = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        final ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
             actionBar.hide();
         }
         Latte.getConfigurator().withActivity(this);
-        String mac=getMac(this);
-        queueName="server-to-display-queue-"+mac;
-        routingKey="server-to-display-routing-key-"+mac;
+        String mac = getMac(this);
+        queueName = "server-to-display-queue-" + mac;
+        routingKey = "server-to-display-routing-key-" + mac;
 
         //开始消息队列
         //mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
-        mConsumer=Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
+        mConsumer = Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
         new consumerconnect().execute();
         mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
             @TargetApi(Build.VERSION_CODES.O)
@@ -90,33 +89,51 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                 String message = "";
                 try {
                     message = new String(text, "UTF8");
-                    final JSONObject command= JSON.parseObject( message);
-                    int dataType=command.getInteger("dataType");
+                    final JSONObject command = JSON.parseObject(message);
+                    int dataType = command.getInteger("dataType");
                     Latte.getConfigurator().withCommand(dataType);
-                    if(dataType==DataType.EXIT.getCode()){//完毕退出
+                    if (dataType == DataType.EXIT.getCode()) {//完毕退出
                         DataCleanManager.cleanApplicationData((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY));
                         ActivityManager.getInstance().finishActivitys();
                         android.os.Process.killProcess(android.os.Process.myPid());
                         System.exit(0);
-                    }else if(dataType==DataType.LAUNCH.getCode()){
+                    } else if (dataType == DataType.LAUNCH.getCode()) {
                         startWithPop(new LauncherDelegate());
-                    }
-                    else if(dataType==DataType.SIGNINBYPASS.getCode()){
-                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"ok",Toast.LENGTH_LONG).show();
+                    } else if (dataType == DataType.SIGNINBYPASS.getCode()) {
+                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), "ok", Toast.LENGTH_LONG).show();
                         startWithPop(SignInByPassDelegate.newInstance(message));
-                    }else if(dataType==DataType.SIGNINBYFACE.getCode()){
+                    } else if (dataType == DataType.SIGNINBYFACE.getCode()) {
                         startWithPop(SignInByFaceRecDelegate.newInstance(message));
-                    }else if(dataType==DataType.STARTSHOOTING.getCode()){//不会直接走，
+                    } else if (dataType == DataType.STARTSHOOTING.getCode()) {//不会直接走，
                         startWithPop(MarkDelegate.newInstance(message));
-                    }else if(dataType==DataType.MARK_DATA.getCode()){
-                        if(markDelegate!=null){
-                            MarkDisplay markDisplay=markDelegate.getMarkDisplay();
-                            if(markDisplay!=null) {
+                    } else if (dataType == DataType.MARK_DATA.getCode()) {
+                        if (markDelegate != null) {
+                            MarkDisplay markDisplay = markDelegate.getMarkDisplay();
+                            if (markDisplay != null) {
                                 markDisplay.setMarkJson(message);
                                 markDelegate.mRefreshHandler.initData(message);
                             }
                         }
-                    }else if(dataType==DataType.DEVICESTATUS.getCode()){
+                    } else if (dataType == DataType.DEVICESTATUS.getCode()) {
+                        JSONObject data=command.getJSONObject("data");
+                        int deviceId=data.getIntValue("deviceId");
+                        String exchangeName="display-to-server-exchange";
+                        String routingKey="display-to-server-routing-key";
+                        new send().execute(deviceId+"",exchangeName,routingKey);
+
+/*
+                        public class Command {
+                            private int code;
+                            private String message;
+                            private int dataType;
+                            private Object data;
+                              注解：
+                             data {
+                                private int deviceType;//靶机，采集，显靶分别为0，1，2
+                                private int deviceGroupIndex;
+                                private int deviceIndex;
+                                private int deviceId;*/
+
                         //TODO 回复Display状态
 
                     }
@@ -126,39 +143,47 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             }
         });
     }
+
     @Override
     public LatteDelegate setRootDelegate() {
         return new LauncherDelegate();
     }
+
     @Override
     public void onSignInSuccess(int index, String command) {
         startWithPop(new LauncherDelegate());
     }
+
     @Override
     public void onSignUpSuccess() {
-        Toast.makeText(this,"登陆成功",Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "登陆成功", Toast.LENGTH_LONG).show();
     }
+
     @Override
-    public void onSignInError(String msg){
+    public void onSignInError(String msg) {
     }
+
     @Override
     public void onSignUpError(String msg) {
     }
+
     @Override
     public void onSignInFailure(String msg) {
     }
+
     @Override
     public void onSignUpFailure(String msg) {
     }
+
     @Override
     public void onLauncherFinish(OnLauncherFinishTag tag) {
-        switch (tag){
+        switch (tag) {
             case SIGNIN_BY_PASS:
-                Toast.makeText(this,"启动结束，用户将以密码登陆",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "启动结束，用户将以密码登陆", Toast.LENGTH_LONG).show();
                 start(new SignInBottomDelegate());
                 break;
             case SIGNIN_BY_FACE:
-                Toast.makeText(this,"启动结束，用户将以人脸识别方式登陆",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "启动结束，用户将以人脸识别方式登陆", Toast.LENGTH_LONG).show();
                 start(new SignInBottomDelegate());
                 break;
         }
@@ -171,7 +196,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
 
     @Override
     public void setMarkDelegate(MarkDelegate markDelegate) {
-        this.markDelegate=markDelegate;
+        this.markDelegate = markDelegate;
     }
 
     @Override
@@ -185,7 +210,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         protected Void doInBackground(String... Message) {
             try {
                 // Connect to broker
-                mConsumer.connectToRabbitMQ(queueName,exchange_name,routingKey);
+                mConsumer.connectToRabbitMQ(queueName, exchange_name, routingKey);
 
             } catch (Exception e) {
                 // TODO: handle exception
@@ -196,21 +221,24 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
 
     }
+
     protected void onResume() {
         super.onResume();
         new consumerconnect().execute();
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mConsumer.Dispose();//此处需要认证考虑
-        Toast.makeText(this,"hello",Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "hello", Toast.LENGTH_LONG).show();
 
     }
 
     /**
      * Android 6.0 之前（不包括6.0）获取mac地址
      * 必须的权限 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
+     *
      * @param context * @return
      */
     public static String getMacDefault(Context context) {
@@ -218,7 +246,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         if (context == null) {
             return mac;
         }
-        WifiManager wifi = (WifiManager)Latte.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifi = (WifiManager) Latte.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = null;
         try {
             info = wifi.getConnectionInfo();
@@ -235,6 +263,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         return mac;
     }
+
     /**
      * Android 6.0-Android 7.0 获取mac地址
      */
@@ -266,6 +295,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
      * Android 7.0之后获取Mac地址
      * 遍历循环所有的网络接口，找到接口是 wlan0
      * 必须的权限 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+     *
      * @return
      */
     public static String getMacFromHardware() {
@@ -290,8 +320,9 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         return "";
     }
-    public String getMac( Context context){
-        String mac= "";
+
+    public String getMac(Context context) {
+        String mac = "";
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             mac = getMacDefault(context);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -301,7 +332,8 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         }
         return mac;
     }
-    private enum DataType{
+
+    private enum DataType {
         LAUNCH(0),
         SIGNINBYPASS(1),
         SIGNINBYFACE(2),//2
@@ -310,23 +342,26 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         MARK_DATA(5),//5
         DEVICESTATUS(6);//6
         private int code;
-        private DataType(int _code){
-            this.code=_code;
+
+        private DataType(int _code) {
+            this.code = _code;
         }
+
         private int getCode() {
             return code;
         }
+
         @Override
 
         public String toString() {
 
-            return String.valueOf ( this .code );
+            return String.valueOf(this.code);
 
         }
 
     }
 
-   /* private class send extends AsyncTask<String, Void, Void> {
+    private class send extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... Message) {
@@ -336,14 +371,16 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                 factory.setUsername(username);
                 factory.setPassword(password);
                 factory.setPort(port);
-                MessagetoServer message=new MessagetoServer();
-                message.setCode(0);//code=0表示打靶完毕，
-                message.setGroup_index(Integer.parseInt(group_index.trim()));
-                message.setTarget_index(Integer.parseInt(target_index.trim()));
-                message.setTraineeId(traineeId);
+                String deviceId=Message[0];
+                String EXCHANGENAME=Message[1];
+                String ROUTINGKEY=Message[2];
+                MessagetoServer message = new MessagetoServer();
+                message.setCode(1);//code=1表示返回ｓｅｒｖｅｒ设备状态
+                message.setDeviceId(Integer.parseInt(deviceId));
+                message.setDevice_status(0);//0，正常，1：异常，只要能返回就是正常
                 Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel();
-                channel.basicPublish(exchangeName, routingKey, null,JSONObject.toJSONString(message).getBytes());
+                channel.basicPublish(EXCHANGENAME, ROUTINGKEY, null, JSONObject.toJSONString(message).getBytes());
                 channel.close();
                 connection.close();
             } catch (Exception e) {
@@ -352,9 +389,10 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             }
             // TODO Auto-generated method stub
             return null;
-        }*/
+        }
 
     }
+}
 
 
 
