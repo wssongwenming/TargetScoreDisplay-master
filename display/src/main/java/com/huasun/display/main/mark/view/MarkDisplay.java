@@ -106,7 +106,7 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             TypedValue.COMPLEX_UNIT_SP, 18, getResources().getDisplayMetrics());
 
     private float mMarkRingRadius = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 4, getResources().getDisplayMetrics());
 
     public MarkDisplay(Context context) {
         super(context);
@@ -254,11 +254,10 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
 
             //float x= (float) (cx+r*differenceRatio*Math.sin(theta));
             //float y= (float) (cy+r*differenceRatio*Math.cos(theta))
-            float X=cx+x*differenceRatio;//返回的坐标x应该以靶心左为负数，
-            float Y=cy-y*differenceRatio;//y应该以靶心向下为负数
+            float X=cx+x*differenceRatio;//返回的坐标x应该以靶心左为负数，-mMarkRingRadius
+            float Y=cy+y*differenceRatio;//y应该以靶心向上为负数
             mCanvas.drawCircle(X,Y,mMarkRingRadius,mMarkRingPaint);
             mCanvas.drawText(id+"",X-(float) textWidth/2,Y-mMarkRingRadius-(float) textHeight/5,mMarkTextPaint);
-
         }
 
     }

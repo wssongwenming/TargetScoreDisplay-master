@@ -117,9 +117,11 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                     } else if (dataType == DataType.DEVICESTATUS.getCode()) {
                         JSONObject data=command.getJSONObject("data");
                         int deviceId=data.getIntValue("deviceId");
+                        int deviceGroupIndex=data.getIntValue("deviceGroupIndex");
+
                         String exchangeName="display-to-server-exchange";
                         String routingKey="display-to-server-routing-key";
-                        new send().execute(deviceId+"",exchangeName,routingKey);
+                        new send().execute(deviceId+"",deviceGroupIndex+"",exchangeName,routingKey);
 
 /*
                         public class Command {
@@ -372,11 +374,13 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                 factory.setPassword(password);
                 factory.setPort(port);
                 String deviceId=Message[0];
-                String EXCHANGENAME=Message[1];
-                String ROUTINGKEY=Message[2];
+                String deviceGroupIndex=Message[1];
+                String EXCHANGENAME=Message[2];
+                String ROUTINGKEY=Message[3];
                 MessagetoServer message = new MessagetoServer();
                 message.setCode(1);//code=1表示返回ｓｅｒｖｅｒ设备状态
                 message.setDeviceId(Integer.parseInt(deviceId));
+                message.setTarget_index(Integer.parseInt(deviceGroupIndex));
                 message.setDevice_status(0);//0，正常，1：异常，只要能返回就是正常
                 Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel();

@@ -85,8 +85,10 @@ dependencies {
     compile files('libs/mpandroidchartlibrary-2-1-6.jar')
 
     //RecyclerView依赖
-    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:+'
-
+    //compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:+'
+    //RecyclerView依赖
+    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.16'
+   // compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.50'
     //RecyclerView分割线
     compile 'com.choices.divider:RecyclerView_Divider:1.0.0'
 

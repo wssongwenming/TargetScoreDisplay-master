@@ -1,10 +1,9 @@
 package com.huasun.display.entity;
-
 /**
  * author:songwenming
  * Date:2020/3/5
  * Description:
-　private int deviceType;//靶机，采集，显靶分别为0，1，2
+ private int deviceType;//靶机，采集，显靶分别为0，1，2
  private int deviceIndex;
  private int deviceId;
  *
@@ -14,7 +13,7 @@ public class MessagetoServer {
     private int code;//0:返回的数据为人员完成射击，1：设备，2：
     private int group_index;
     private String traineeId;
-    private int target_index;//靶位号
+    private int target_index;//靶位号,有些地方用了deviceGroupIndex
     private int trainee_status;//人员状态
     private int device_status;//设备状态
     private int deviceType;//靶机，采集，显靶分别为0，1，2

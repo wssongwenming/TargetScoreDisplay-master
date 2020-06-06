@@ -3,6 +3,7 @@ package com.huasun.display.recycler;
 import android.view.View;
 
 import com.chad.library.adapter.base.BaseViewHolder;
+//import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 /**
  * author:songwenming
