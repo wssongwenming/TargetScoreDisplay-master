@@ -85,6 +85,7 @@ public abstract class IConnectToRabbitMQ {
             mConnection = connectionFactory.newConnection();
             //创建一个通道
             mModel = mConnection.createChannel();
+            //只有在channel.basicQos被使用的时候channel.basicAck(delivery.getEnvelope().getDeliveryTag(),false)才起到作用。
             mModel.basicQos(1);
             //创建一个的交换器
             //exchangeDeclare(String exchange, String type, boolean durable, boolean autoDelete,

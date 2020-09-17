@@ -17,6 +17,7 @@ import com.joanzapata.iconify.fonts.FontAwesomeModule;
  */
 public class MainApp extends Application {
     private String server="192.168.1.3";
+    //private String server="192.168.8.106";
     private String exchange_name = "server-to-display-exchange";
     private String exchange_type="topic";
     private int port=5672;
