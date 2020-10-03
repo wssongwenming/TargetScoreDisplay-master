@@ -72,6 +72,7 @@ public class PopWindow implements PopWindowInterface,
         mStyle = style;
     }
 
+
     @Override
     public void setView(View view) {
         mCustomView = view;
@@ -264,6 +265,7 @@ public class PopWindow implements PopWindowInterface,
         public PopWindow create() {
             if (popWindow == null) {
                 popWindow = new PopWindow(activity, title, message, style);
+
             }
             return popWindow;
         }
@@ -301,7 +303,7 @@ public class PopWindow implements PopWindowInterface,
             mPopUpWindow.dismiss();
         }
         if (mPopDownWindow != null) {
-            mPopDownWindow.dismiss();
+           mPopDownWindow.dismiss();
         }
         if (mPopAlertDialog != null) {
             mPopAlertDialog.dismiss();

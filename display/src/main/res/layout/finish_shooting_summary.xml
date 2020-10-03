@@ -2,7 +2,7 @@
 <android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="100dp"
-    android:layout_height="400dp"
+    android:layout_height="800dp"
     android:orientation="vertical">
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/tv_shoot_mark"
@@ -11,8 +11,8 @@
         android:gravity="top|left"
         android:layout_below="@+id/normal"
         android:layout_width="fill_parent"
-        android:layout_height="300dp"
+        android:layout_height="800dp"
         android:padding="5dip"
         android:textColor="@color/darkRed"
-        android:textSize="40dip" />
+        android:textSize="20dip" />
 </android.support.v7.widget.LinearLayoutCompat>

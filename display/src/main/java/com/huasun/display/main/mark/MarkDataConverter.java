@@ -25,13 +25,13 @@ public class MarkDataConverter extends DataConverter {
     public ArrayList<MultipleItemEntity> convert() {
         ENTITIES.clear();
         final MultipleItemEntity title=MultipleItemEntity.builder()
-                .setFiled(MultipleFields.ID,"子弹序号")
+                .setFiled(MultipleFields.ID,"序号")
                 .setFiled(MultipleFields.ITEM_TYPE, ItemType.TEXT_TEXT)
                 .setFiled(MultipleFields.RINGNUMBER,"环数")
-                .setFiled(MultipleFields.OFFSETDIRECTION,"偏移方向")
-                .setFiled(MultipleFields.SHOOTINGTIE,"射击时间")
+                .setFiled(MultipleFields.OFFSETDIRECTION,"偏移")
+                .setFiled(MultipleFields.SHOOTINGTIE,"时间")
                 .build();
-        ENTITIES.add(title);
+//        ENTITIES.add(title);
         String json=getJsonData();
         if(json!=null&&!json.isEmpty()) {
             final JSONArray dataArray = JSON.parseObject(json).getJSONArray("holes");

@@ -2,23 +2,25 @@
 <android.support.v7.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp"
     android:layout_height="match_parent"
     android:background="@color/Gray2"
     android:orientation="vertical">
-    <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:background="#ececec"
-        android:layout_height="40dp">
-        <TextView
-            android:id="@+id/tv_time"
-            android:textSize="20sp"
-            android:textColor="@color/light_black"
-            android:text="2019年10月19日-某某靶场"
-            android:paddingTop="6dp"
-            android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </android.support.v7.widget.Toolbar>
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:background="#ececec"-->
+        <!--android:layout_height="40dp">-->
+        <!--<TextView-->
+            <!--android:id="@+id/tv_time"-->
+            <!--android:textSize="20sp"-->
+            <!--android:textColor="@color/light_black"-->
+            <!--android:text="2019年10月19日-某某靶场"-->
+            <!--android:paddingTop="6dp"-->
+            <!--android:gravity="center"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"/>-->
+    <!--</android.support.v7.widget.Toolbar>-->
 
     <android.support.v7.widget.LinearLayoutCompat
         android:orientation="horizontal"
@@ -31,7 +33,7 @@
             android:layout_width="0dp"
             android:background="@drawable/edittext"
             android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_weight="9"
            >
             <com.huasun.display.main.mark.view.MarkDisplay
                 android:layout_height="match_parent"
@@ -45,9 +47,9 @@
         <!--基本情况-->
         <android.support.v7.widget.LinearLayoutCompat
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_weight="3"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:background="@drawable/edittext"
             android:orientation="vertical"
             android:layout_height="wrap_content">
@@ -56,35 +58,35 @@
             android:id="@+id/llc_person_data"
             android:layout_width="match_parent"
             android:background="@drawable/edittext"
-            android:layout_marginTop="20dp"
-
-
+            android:layout_marginTop="2dp"
             android:orientation="vertical"
             android:layout_height="wrap_content"
            >
             <android.support.v7.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
                 android:layout_marginTop="10dp"
                 android:orientation="horizontal">
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
                     android:layout_width="match_parent">
                     <TextView
+                        android:layout_marginRight="5dp"
                         android:layout_width="wrap_content"
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content"
-                        android:text="姓        名:"
+                        android:text="姓    名:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:id="@+id/edit_name"
                         android:background="@drawable/area_bg"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
             </android.support.v7.widget.LinearLayoutCompat>
@@ -92,26 +94,28 @@
             <android.support.v7.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="5dp"
                 android:orientation="horizontal">
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent">
                     <TextView
                         android:layout_width="wrap_content"
+                        android:layout_marginRight="5dp"
+
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content"
-                        android:text="部  职  别:"
+                        android:text="部职别:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:id="@+id/edit_department"
                         android:background="@drawable/area_bg"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
             </android.support.v7.widget.LinearLayoutCompat>
@@ -120,47 +124,50 @@
             <android.support.v7.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="5dp"
                 android:orientation="horizontal">
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="2">
+                    android:layout_weight="5">
                     <TextView
                         android:layout_width="wrap_content"
+                        android:layout_marginRight="5dp"
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content"
-                        android:text="射击枪械:"
+                        android:text="枪    械:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1"
+                        android:layout_marginRight="3dp"
                         android:id="@+id/edit_gun"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:background="@drawable/area_bg"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="1">
+                    android:layout_weight="3">
                     <TextView
 
                         android:layout_width="wrap_content"
+                        android:layout_marginRight="5dp"
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content"
-                        android:text="子弹数:"
+                        android:text="弹数:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1.5"
                         android:id="@+id/edit_bullet"
                         android:background="@drawable/area_bg"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
             </android.support.v7.widget.LinearLayoutCompat>
@@ -168,92 +175,159 @@
             <android.support.v7.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="5dp"
-                android:layout_marginRight="10dp"
+                android:layout_marginRight="5dp"
                 android:orientation="horizontal">
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="1">
+                    android:layout_weight="5">
                     <TextView
                         android:layout_width="wrap_content"
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
+                        android:layout_marginRight="5dp"
                         android:layout_height="wrap_content"
-                        android:text="靶位编号:"
+                        android:text="靶    位:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1"
+                        android:layout_marginRight="5dp"
                         android:background="@drawable/area_bg"
                         android:id="@+id/edit_target_number"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
                 <android.support.v7.widget.LinearLayoutCompat
                     android:layout_height="wrap_content"
                     android:layout_width="0dp"
-                    android:layout_weight="1">
+                    android:layout_weight="3">
                     <TextView
                         android:layout_width="wrap_content"
+                        android:layout_marginRight="5dp"
                         android:textColor="@color/black"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content"
-                        android:text="编组序号:"
+                        android:text="组号:"
                         />
                     <EditText
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:background="@drawable/area_bg"
                         android:id="@+id/edit_group_number"
-                        android:textSize="18sp"
+                        android:textSize="24sp"
                         android:layout_height="wrap_content" />
                 </android.support.v7.widget.LinearLayoutCompat>
             </android.support.v7.widget.LinearLayoutCompat>
+            <TextView
+                android:layout_width="match_parent"
+                android:background="@color/Dark"
+                android:layout_height="1px" />
+            <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+
+                android:layout_marginRight="5dp"
+                android:orientation="horizontal">
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/black"
+                        android:textSize="24sp"
+                        android:layout_marginRight="5dp"
+                        android:layout_height="wrap_content"
+                        android:text="序号"
+                        />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/black"
+                        android:textSize="24sp"
+                        android:layout_marginRight="5dp"
+                        android:layout_height="wrap_content"
+                        android:text="环数"
+                        />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/black"
+                        android:textSize="24sp"
+                        android:layout_marginRight="5dp"
+                        android:layout_height="wrap_content"
+                        android:text="偏移"
+                        />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/black"
+                        android:textSize="24sp"
+                        android:layout_marginRight="5dp"
+                        android:layout_height="wrap_content"
+                        android:text="时间"
+                        />
+                </android.support.v7.widget.LinearLayoutCompat>
+             </android.support.v7.widget.LinearLayoutCompat>
+            <!--recyclerview位置-->
+
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:layout_marginLeft="2dp"
+                android:layout_marginTop="2px"
+                android:layout_marginBottom="2dp"
+                android:layout_marginRight="2dp"
+                android:id="@+id/srl_mark"
+                android:background="#ececec"
+                android:layout_width="match_parent"
+                android:layout_height="492dp">
+                <android.support.v7.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="492dp"
+                    android:background="#ececec"
+                    android:id="@+id/rv_mark"/>
+            </android.support.v4.widget.SwipeRefreshLayout>
+
         </android.support.v7.widget.LinearLayoutCompat>
-        <!--recyclerview位置-->
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:layout_marginLeft="2dp"
-            android:layout_marginTop="2px"
-            android:layout_marginBottom="2dp"
-            android:layout_marginRight="2dp"
-            android:id="@+id/srl_mark"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-             <android.support.v7.widget.RecyclerView
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="#ececec"
-              android:id="@+id/rv_mark"/>
-        </android.support.v4.widget.SwipeRefreshLayout>
-        <android.support.v7.widget.AppCompatTextView
-            android:layout_height="wrap_content"
-            android:id="@+id/tv_person_data"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:textColor="@color/black"
-            android:background="#ececec"
-            android:textSize="20sp"
-            android:text="基本情况"/>
+        <android.support.v7.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_finish_shooting"
+                android:text="射击完毕"
 
+                android:textStyle="bold"
+                android:textSize="35sp"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:textColor="@color/black"
+                android:background="#ececec"
+                android:layout_height="wrap_content" />
+            </android.support.v7.widget.LinearLayoutCompat>
+        <!--<android.support.v7.widget.AppCompatTextView-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/tv_person_data"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_marginLeft="5dp"-->
+            <!--android:paddingLeft="5dp"-->
+            <!--android:paddingRight="5dp"-->
+            <!--android:textColor="@color/red_btn_bg_pressed_color"-->
+            <!--android:background="#ececec"-->
+            <!--android:textSize="24sp"-->
+            <!--android:text="基本情况"/>-->
+
+
+        </android.support.v7.widget.LinearLayoutCompat>
 
     </android.support.v7.widget.LinearLayoutCompat>
 
 
     </android.support.v7.widget.LinearLayoutCompat>
-    <Button
-        android:id="@+id/btn_finish_shooting"
-        android:text="打靶完毕"
-        android:layout_marginTop="5dp"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:textColor="@color/black"
-        android:background="#ececec"
-        android:layout_height="wrap_content" />
-</android.support.v7.widget.LinearLayoutCompat>

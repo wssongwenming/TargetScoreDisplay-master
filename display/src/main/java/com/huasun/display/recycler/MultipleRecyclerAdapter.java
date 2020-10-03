@@ -41,8 +41,9 @@ public class MultipleRecyclerAdapter extends BaseMultiItemQuickAdapter<MultipleI
     private void init(){
         addItemType(ItemType.TEXT_TEXT, R.layout.item_multiple_text);
         addItemType(ItemType.TEXT,R.layout.item_mutiple_text_text);
-        openLoadAnimation();
-        isFirstOnly(false);
+        //openLoadAnimation();
+        //isFirstOnly(false);如果为false时Recyclerview 刷新时会闪
+        isFirstOnly(true);
 
     }
 
@@ -73,12 +74,21 @@ public class MultipleRecyclerAdapter extends BaseMultiItemQuickAdapter<MultipleI
                     holder.setBackgroundColor(R.id.tv_shooting_time,Color.WHITE);
                 }
                 holder.setText(R.id.tv_id,id);
-                holder.setText(R.id.tv_ring_number,ringNumber);
+                holder.setText(R.id.tv_ring_number,deleteZero(ringNumber));
                 holder.setText(R.id.tv_offset_direction,offsetDirection);
-                holder.setText(R.id.tv_shooting_time, shootingTime);
+                holder.setText(R.id.tv_shooting_time, shootingTime.substring(10,19));
                 break;
         }
 
+    }
+
+    public  String deleteZero(String score){
+        int indexofdot=score.indexOf(".");
+        if(indexofdot>0) {
+            String SCORE = score.substring(0, score.indexOf("."));
+            return SCORE;
+        }
+        return score;
     }
 
 

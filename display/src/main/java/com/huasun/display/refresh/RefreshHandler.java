@@ -2,6 +2,8 @@ package com.huasun.display.refresh;
 
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
+import android.view.View;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +13,10 @@ import com.huasun.core.net.RestClient;
 import com.huasun.core.net.callback.ISuccess;
 import com.huasun.display.recycler.DataConverter;
 import com.huasun.display.recycler.MultipleRecyclerAdapter;
+import com.huasun.display.recycler.StickHeaderDecoration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -19,6 +25,8 @@ import com.huasun.display.recycler.MultipleRecyclerAdapter;
  * Description:
  */
 public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,BaseQuickAdapter.RequestLoadMoreListener{
+
+    private Map<Integer,String> keys=new HashMap<>();//存放
     private final SwipeRefreshLayout REFRESH_LAYOUT;
     private final PagingBean BEAN;
     private final RecyclerView RECYCLERVIEW;
@@ -48,30 +56,16 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
         },2000);
     }
 
-/*    public void injectDataIntoRecy (String url){
-        BEAN.setDelayed(10);
-        BEAN.setPageSize(20);
-        RestClient.builder()
-                .url(url)
-                .success(new ISuccess() {
-                    @Override
-                    public void onSuccess(String response){
-                        final JSONObject object= JSON.parseObject(response);
-                        BEAN.setTotal(object.getInteger("total"));
-                        mAdapter=MultipleRecyclerAdapter.create(CONVERTER.setJsonData(response));
-                        mAdapter.setOnLoadMoreListener(RefreshHandler.this,RECYCLERVIEW);
-                        RECYCLERVIEW.setAdapter(mAdapter);
-                        BEAN.addIndex();
-                    }
-                })
-                .build()
-                .get();
-    }*/
+
 
     public void initData (String json){
+                        keys.put(0,"我是第0个标题");
+
                         mAdapter=MultipleRecyclerAdapter.create(CONVERTER.setJsonData(json));
                         mAdapter.setOnLoadMoreListener(RefreshHandler.this,RECYCLERVIEW);
                         RECYCLERVIEW.setAdapter(mAdapter);
+                        //recyclerview将动滑动到底部
+                        RECYCLERVIEW.scrollToPosition(mAdapter.getItemCount()-1);
 
     }
 

@@ -50,10 +50,11 @@ public class PopUpWindow extends Dialog implements PopWindowInterface, DialogInt
         super(activity, R.style.PopWindowStyle);
         setContentView(R.layout.pop_up_window);
         getWindow().setWindowAnimations(R.style.PopWindowAnimation);
-        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, getScreenHeight(activity) - getStatusBarHeight(activity));
+//        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, 800);
+        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, 320);
         setOnShowListener(this);
-        setCancelable(true);
-        setCanceledOnTouchOutside(true);
+        setCancelable(false);
+        setCanceledOnTouchOutside(false);
         mPopWindow = popWindow;
 
         initRootView();

@@ -1,6 +1,8 @@
 package com.huasun.display.main.mark;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -9,46 +11,40 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ExpandableListView;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bigkoo.convenientbanner.ConvenientBanner;
+import com.hmy.popwindow.PopItemAction;
+import com.hmy.popwindow.PopWindow;
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
-import com.huasun.core.net.RestClient;
-import com.huasun.core.net.callback.ISuccess;
-import com.huasun.core.ui.launcher.LauncherHolderCreator;
-import com.huasun.core.util.callback.CallbackManager;
-import com.huasun.core.util.callback.CallbackType;
-import com.huasun.core.util.callback.IGlobalCallback;
-import com.huasun.core.util.storage.LattePreference;
 import com.huasun.display.R;
 import com.huasun.display.R2;
-import com.huasun.display.database.UserProfile;
+import com.huasun.display.entity.MessagetoServer;
 import com.huasun.display.main.mark.view.MarkDisplay;
-import com.huasun.display.recycler.ItemType;
 import com.huasun.display.recycler.MultipleFields;
 import com.huasun.display.recycler.MultipleItemEntity;
 import com.huasun.display.recycler.MultipleRecyclerAdapter;
 import com.huasun.display.refresh.PagingBean;
 import com.huasun.display.refresh.RefreshHandler;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-
+import android.widget.PopupWindow;
 
 /**
  * author:songwenming
@@ -56,469 +52,213 @@ import butterknife.OnClick;
  * Description:
  */
 public class MarkDelegate1 extends BottomItemDelegate {
+    private String server="192.168.1.3";
+    private int port=5672;
+    private String username="client";
+    private String password="client";
+    private String exchangeName="display-to-server-exchange";
+    private String routingKey="display-to-server-routing-key";
 
-    String medicineName=null;
-    //private List<MedicinePlanInfo> list =new ArrayList<>();
-    //private MyElvAdapterForIndex myAdapter;
-    private Context context;
-    //显示用药计划
-    //private Map<String, List<MedicinePlan>> dataset = new HashMap<>();
-    private  ArrayList<String> parentList=new ArrayList<>();
-    //MedicinePlanExpandableListViewAdapter medicinePlanExpandableListViewAdapter;
-    //显示用药历史
-    ArrayList<MultipleItemEntity> medicineHistoryList=new ArrayList<>();
-    MultipleRecyclerAdapter medicineHistoryRecyclerViewAdapter;
-    //
-    @BindView(R2.id.banner_index)
-    ConvenientBanner mConvenientBanner=null;
-
-    @BindView(R2.id.rv_index_history)
-    RecyclerView mRecyclerViewHistory=null;
-    @BindView(R2.id.elv_index_plan)
-    ExpandableListView mExpandableListView=null;
-    @BindView(R2.id.srl_index)
+    private static String COMMAND="COMMAND";
+    private ArrayList<MultipleItemEntity> medicineHistoryList=new ArrayList<>();
+    int llcPersonDataHeight=0;
+    int tvPersonDataHeight=0;
+    int srlMarkHeight=0;
+    private String target_index="";
+    private String group_index="";
+    private String traineeId="";
+    String markJson="";
+    @BindView(R2.id.surface_pan)
+    MarkDisplay markDisplay=null;
+//    @BindView(R2.id.tv_person_data)
+//    AppCompatTextView mTvPersonData=null;
+    @BindView(R2.id.llc_person_data)
+    LinearLayoutCompat mLlcPersonData=null;
+    @BindView(R2.id.rv_mark)
+    RecyclerView mRecyclerView=null;
+    @BindView(R2.id.srl_mark)
     SwipeRefreshLayout mRefreshLayout=null;
+    @BindView(R2.id.edit_name)
+    EditText mName=null;
+    @BindView(R2.id.edit_department)
+    EditText mDepartment=null;
+    @BindView(R2.id.edit_gun)
+    EditText mGun=null;
+    @BindView(R2.id.edit_bullet)
+    EditText mBullet=null;
+    @BindView(R2.id.edit_target_number)
+    EditText mTargetNumber=null;
+    @BindView(R2.id.edit_group_number)
+    EditText mGroupNumber=null;
+//    @BindView(R2.id.tv_time)
+//    TextView mTime=null;
+    @OnClick(R2.id.btn_finish_shooting)
+    void onClickSignIn(){
+        int bulletCount=Integer.parseInt(mBullet.getText().toString());//获得子弹数目
+        final View customView = View.inflate((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), R.layout.finish_shooting_summary, null);//获得弹出框里要放的view
+        AppCompatTextView textView=customView.findViewById(R.id.tv_shoot_mark);
+        MultipleRecyclerAdapter multipleRecyclerAdapter= (MultipleRecyclerAdapter)mRecyclerView.getAdapter();
+        double ringSum= (float) 0.0;
+        if(multipleRecyclerAdapter!=null) {
+            List<MultipleItemEntity> entityList = multipleRecyclerAdapter.getData();
+            int count = entityList.size();
+            for (int i = 1; i < count; i++) {
+                ringSum = ringSum + Double.parseDouble(entityList.get(i).getField(MultipleFields.RINGNUMBER).toString());
+            }
+        }
+        textView.setText("您的打靶总成绩为："+ringSum+"环,平均成绩为："+ringSum/bulletCount+"环");
+        PopWindow popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
+                .setStyle(PopWindow.PopWindowStyle.PopUp)
+                .setTitle("打靶成绩报告")
+                .addContentView(customView)
+                //.addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Cancel))
+                .addItemAction(new PopItemAction("确定", PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
+                    @Override
+                    public void onClick() {
+                        new send().execute();
+                        Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
+                    }
+                }))
+                .create();
+        popWindow.show();
 
-    private RefreshHandler mRefreshHandler=null;
-    //private Set<SwipeListLayout> sets = new HashSet();
-    //private ConvenientBanner<Integer> mConvenientBanner=null;
-    private static final ArrayList<Integer> INTEGERS=new ArrayList<>();
 
+    }
+    private String command;
+    public RefreshHandler mRefreshHandler;
     private void initRefreshLayout(){
         mRefreshLayout.setColorSchemeResources(
-                android.R.color.holo_blue_bright,
-                android.R.color.holo_red_light,
-                android.R.color.holo_red_light
+                android.R.color.background_dark,
+                android.R.color.background_light
         );
-        mRefreshLayout.setProgressViewOffset(true,120,300);
+        mRefreshLayout.setProgressViewOffset(true,llcPersonDataHeight+tvPersonDataHeight/2,llcPersonDataHeight+tvPersonDataHeight/2+200);
     }
-
-    @Override
-    public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
-        if(mRefreshLayout!=null) {
-            mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    refresh();
-                }
-            });
-        }
-        UserProfile userProfile= (UserProfile) Latte.getConfigurations().get(ConfigKeys.LOCAL_USER);
-        if(userProfile==null){
-            //startWithPop(new SignInDelegate());
-        }else {
-            //tel=Long.toString(userProfile.getTel());
-            //boxId= LattePreference.getBoxId();
-           // if(boxId.equalsIgnoreCase("未设置boxId"))
-          //  {
-         //       Toast.makeText(getContext(),"请添加药箱，并绑定当前药箱",Toast.LENGTH_LONG).show();
-        //    }
-
-        }
-        CallbackManager.getInstance()
-/*                .addCallback(CallbackType.ON_SCAN, new IGlobalCallback() {
-
-                    @Override
-                    public void executeCallback(@Nullable final Object args){
-                        String target=Latte.getConfiguration(ConfigKeys.SCANFOR);
-
-                        if(target.equalsIgnoreCase("medicine")) {
-                            //Toast.makeText(getContext(),"扫描到的二维码"+args,Toast.LENGTH_LONG).show();
-                            RestClient.builder()
-                                    .clearParams()
-                                    .url(UploadConfig.API_HOST + "/api/get_drugs_by_code")
-                                    .params("code", args.toString().trim())
-                                    .success(new ISuccess() {
-                                        @Override
-                                        public void onSuccess(String response) {
-                                            Log.d("responseforscan", response);
-                                            JSONObject object = JSON.parseObject(response);
-                                            int code = object.getIntValue("code");
-                                            if (code == 1) {
-                                                JSONObject detail = object.getJSONObject("detail");
-                                                medicineName = detail.getString("name");
-                                                HandAddDelegateForIndex delegate = HandAddDelegateForIndex.newInstance(args.toString().trim(), medicineName);
-                                                getParentDelegate().start(delegate);
-                                                Log.d("medicinename", "name=" + medicineName);
-                                            } else {
-                                                HandAddDelegateForIndex delegate = HandAddDelegateForIndex.newInstance(args.toString().trim(), "");
-                                                getParentDelegate().start(delegate);
-                                            }
-                                        }
-                                    })
-                                    .build()
-                                    .get();
-                        }else if(target.equalsIgnoreCase("boxId")){
-                            AddMedicineBoxByScanDelegate delegate=AddMedicineBoxByScanDelegate.newInstance(args.toString());
-                            getParentDelegate().start(delegate);
-                        }
-
-
-
-                    }
-                })*/
-                .addCallback(CallbackType.ON_BIND_BOXID, new IGlobalCallback() {
-                    @Override
-                    public void executeCallback(@Nullable Object args) {
-                        //Toast.makeText(getContext(),"boxId="+ LattePreference.getBoxId(),Toast.LENGTH_LONG).show();
-                    }
-                }).addCallback(CallbackType.ON_GET_MEDICINE_PLAN_INDEX, new IGlobalCallback() {
-            @Override
-            public void executeCallback(@Nullable Object args) {
-               // getMedicinePlan();
-/*                RestClient.builder()
-                        .clearParams()
-                        .url(UploadConfig.API_HOST+"/api/get_plan")
-                        //.url("medicine_plan")
-                        .params("tel",tel)
-                        .params("boxId",LattePreference.getBoxId())
-                        .success(new ISuccess() {
-                            @Override
-                            public void onSuccess(String response) {
-                                JSONObject object= JSON.parseObject(response);
-                                int code=object.getIntValue("code");
-                                if(code==1) {
-                                    //Toast.makeText(getContext(),"该刷新了",Toast.LENGTH_LONG).show();
-                                    initData(response);
-                                    myAdapter.notifyDataSetChanged();
-                                }
-                            }
-                        })
-                        .build()
-                        .get();*/
-            }
-        }).addCallback(CallbackType.ON_CHANGE_BOXID_FOR_HISTORY, new IGlobalCallback() {
-            @Override
-            public void executeCallback(@Nullable Object args) {
-               // getMedicineHistory();
-/*                RestClient.builder()
-                        .clearParams()
-                        .url(UploadConfig.API_HOST+"/api/get_plan")
-                        //.url("medicine_plan")
-                        .params("tel",tel)
-                        .params("boxId",LattePreference.getBoxId())
-                        .success(new ISuccess() {
-                            @Override
-                            public void onSuccess(String response) {
-                                com.alibaba.fastjson.JSONObject object= JSON.parseObject(response);
-                                int code=object.getIntValue("code");
-                                if(code==1) {
-                                    initData(response);
-                                    myAdapter.notifyDataSetChanged();
-                                }
-                            }
-                        })
-                        .build()
-                        .get();*/
-            }
-        });
-
-        //mRefreshHandler=RefreshHandler.create(mRefreshLayout,mRecyclerViewHistory,
-        //mExpandableListView,new IndexDataConverter(),this.getParentDelegate(),null);
-        mExpandableListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-
-            }
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                View firstView = view.getChildAt(firstVisibleItem);
-                if (firstVisibleItem == 0 && (firstView == null || firstView.getTop() == 0)) {
-                    mRefreshLayout.setEnabled(true);
-                } else {
-                    mRefreshLayout.setEnabled(false);
-                }
-            }
-        });
+    public static MarkDelegate newInstance(String command){
+        final Bundle args = new Bundle();
+        args.putString(COMMAND,command);
+        final MarkDelegate delegate = new MarkDelegate();
+        delegate.setArguments(args);
+        return delegate;
     }
-
-/*    private void initGridView(){
-        mData = new LinkedList<>();
-        mData.add(new Icon(R.mipmap.icon_medicine_scan_add, "扫码添加"));
-        mData.add(new Icon(R.mipmap.icon_medicine_hand_add, "手动添加"));
-        mData.add(new Icon(R.mipmap.icon_mdicine_mine, "我的药品"));
-        mData.add(new Icon(R.mipmap.icon_medicine_take_plan, "用药计划"));
-        mData.add(new Icon(R.mipmap.icon_medicine_take_history, "用药记录"));
-        mData.add(new Icon(R.mipmap.main_health, "身体状况"));
-        mAdapter = new MyAdapter<Icon>(mData, R.layout.item_grid_icon) {
-            @Override
-            public void bindView(ViewHolder holder, Icon icon) {
-                holder.setImageResource(R.id.img_icon, icon.getiId());
-                holder.setText(R.id.txt_icon,icon.getiName());
-            }
-        };
-        buttonGrid.setAdapter(mAdapter);
-        buttonGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position){
-                    case 0://点击了“扫码添加”
-                        getParentDelegate().startScanWithCheck(getParentDelegate());
-                        break;
-                    case 1://点击了“手动添加”
-                        getParentDelegate().start(new HandAddDelegate());
-                        break;
-                    case 2://点击了“我的药品”
-                        getParentDelegate().start(new MedicineMineDelegate());
-                        break;
-                    case 3://点击了“用药计划”
-                        getParentDelegate().start(new MedicineTakePlanDelegate());
-                        break;
-                    case 4://点击了“用药记录”
-                        getParentDelegate().start(new MedicineTakeHistoryDelegate());
-                        break;
-                    case 5://点击了“用药记录”
-                        getParentDelegate().start(new BodySituationDelegate());
-                        break;
-                }
-            }
-        });
-    }*/
-/*    private void initBanner(){
-        INTEGERS.add(R.mipmap.banner_01);
-        //INTEGERS.add(R.mipmap.banner_02);
-        INTEGERS.add(R.mipmap.banner_03);
-        mConvenientBanner
-                .setPages(new LauncherHolderCreator(),INTEGERS)
-                .setPageIndicator(new int[]{R.drawable.dot_normal,R.drawable.dot_focus})
-                .setPageIndicatorAlign(ConvenientBanner.PageIndicatorAlign.CENTER_HORIZONTAL)
-                .setCanLoop(false);
-    }*/
-    private void initRecyclerView(){
-        final LinearLayoutManager linearLayoutManager_history=new LinearLayoutManager(getContext());
-        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(getContext());
-        mRecyclerViewHistory.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        mRecyclerViewHistory.setLayoutManager(linearLayoutManager);
-    }
-    @Override
-    public void onLazyInitView(@Nullable Bundle savedInstanceState) {
-        super.onLazyInitView(savedInstanceState);
-        initRecyclerView();
-        //initGridView();
-        initRefreshLayout();
-        //initBanner();
-        //getMedicinePlan();
-        //getMedicineHistory();
-        //mRefreshHandler.firstPage_medicine_history(UploadConfig.API_HOST+"/api/get_history",tel,1,5);
-        //mRefreshHandler.get_medicine_plan(UploadConfig.API_HOST+"/api/get_plan",tel,boxId);
-
-    }
-    @Override
-    public Object setLayout() {
-        return R.layout.delegate_mark1;
-    }
-
-/*    private void getMedicinePlan(){
-        Log.d("Latteboxid", LattePreference.getBoxId());
-        RestClient.builder()
-                .clearParams()
-                .url(UploadConfig.API_HOST+"/api/get_plan")
-                //.url("medicine_plan")
-                .params("tel",tel)
-                .params("boxId",LattePreference.getBoxId())
-                .success(new ISuccess() {
-                    @Override
-                    public void onSuccess(String response) {
-                        com.alibaba.fastjson.JSONObject object= JSON.parseObject(response);
-                        int code=object.getIntValue("code");
-                        if(code==1) {
-                            initData(response);
-                            myAdapter.notifyDataSetChanged();
-                        }
-                    }
-                })
-                .build()
-                .get();
-    }
-    private void getMedicineHistory()
-    {
-        RestClient.builder()
-                .clearParams()
-                .url(UploadConfig.API_HOST+"/api/get_history")
-                //.url("medicine_plan")
-                .params("tel",tel)
-                .params("boxId",LattePreference.getBoxId())
-                .params("page",0)
-                .params("count",5)
-                .success(new ISuccess() {
-                    @Override
-                    public void onSuccess(String response) {
-                        com.alibaba.fastjson.JSONObject object= JSON.parseObject(response);
-                        int code=object.getIntValue("code");
-                        if(code==1) {
-                            convert_response_to_history(response);
-                            medicineHistoryRecyclerViewAdapter.notifyDataSetChanged();
-                        }
-                    }
-                })
-                .build()
-                .get();
-    }*/
-
-/*    private void convert_response_to_plan(String jsonString){
-        if(jsonString!=null) {
-            dataset.clear();
-            parentList.clear();
-            final JSONObject jsonObject = JSON.parseObject(jsonString);
-            //String tel=jsonObject.getString("tel");
-            final com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("detail");
-            final JSONArray dataArray = data.getJSONArray("planlist");
-            int size = dataArray.size();
-            for (int i = 0; i < size; i++) {
-
-                JSONObject jsondata = (JSONObject) dataArray.get(i);
-                parentList.add(jsondata.getString("time"));
-                JSONArray jsonArray = jsondata.getJSONArray("plans");
-                int lenght = jsonArray.size();
-                List<MedicinePlan> childrenList = new ArrayList<>();
-                for (int j = 0; j < lenght; j++) {
-                    JSONObject jsonObject1 = (JSONObject) jsonArray.get(j);
-                    MedicinePlan medicinePlanModel = new MedicinePlan();
-                    medicinePlanModel.setAtime(jsonObject1.getString("atime"));
-                    medicinePlanModel.setEndRemind(jsonObject1.getString("endRemind"));
-                    medicinePlanModel.setId(jsonObject1.getString("id"));
-                    medicinePlanModel.setMedicineUseCount(jsonObject1.getIntValue("medicineUseCount"));
-                    //medicinePlanModel.setDayInterval(jsonObject1.getInteger("dayInterval"));
-                    medicinePlanModel.setStartRemind(jsonObject1.getString("startRemind"));
-                    medicinePlanModel.setMedicineName(jsonObject1.getString("medicineName"));
-                    medicinePlanModel.setBoxId(jsonObject1.getString("boxId"));
-                    childrenList.add(medicinePlanModel);
-                }
-                dataset.put(parentList.get(i), childrenList);
-            }
-        }
-    }
-    private void convert_response_to_history(String jsonString){
-        medicineHistoryList.clear();
-        if(jsonString!=null) {
-
-            String medicineId = null;
-            String medicineName = null;
-            String medicineUseTime = null;
-            int historyType=-1;
-            String medicineHistoryType=null;
-            String tel = null;
-            String boxId = null;
-            String id = null;
-            if (jsonString != null) {
-                JSONObject jsonobject = JSON.parseObject(jsonString);
-                JSONObject jsonobject1 = jsonobject.getJSONObject("detail");
-                JSONArray jsonarray = jsonobject1.getJSONArray("histories");
-                int size = jsonarray.size();
-                for (int i = 0; i < size; i++) {
-                    JSONObject jsonobject2 = jsonarray.getJSONObject(i);
-                    boxId = jsonobject2.getString("boxId");
-                    medicineName = jsonobject2.getString("medicineNames");
-                    medicineUseTime = jsonobject2.getString("medicineUseTime");
-                    historyType=jsonobject2.getIntValue("status");
-                    switch (historyType) {
-                        case 1:
-                            medicineHistoryType = "药盒按时服用:";
-                            break;
-                        case 2:
-                            medicineHistoryType = "药箱按时服用:";
-                            break;
-                        case 3:
-                            medicineHistoryType = "药盒未按时服用:";
-                            break;
-                        case 4:
-                            medicineHistoryType = "药箱未按时服用:";
-                            break;
-                        case 5:
-                            medicineHistoryType = "药盒非服药操作";
-                            break;
-                        case 6:
-                            medicineHistoryType = "药箱非服药操作";
-                            break;
-                    }
-                    tel = jsonobject2.getString("tel");
-                    id = jsonobject2.getString("id");
-                    final MultipleItemEntity entity = MultipleItemEntity.builder()
-                            .setField(MultipleFields.ITEM_TYPE, ItemType.TEXT_TEXT)
-                            .setField(MultipleFields.SPAN_SIZE, 3)
-                            .setField(MultipleFields.MEDICINE_NAME, medicineHistoryType+" "+medicineName)
-                            .setField(MultipleFields.MEDICINEUSERTIME, medicineUseTime)
-                            .setField(MultipleFields.BOXID, boxId)
-                            .setField(MultipleFields.MEDICINEHISTORYTYPE,medicineHistoryType)
-                            .setField(MultipleFields.TEL, tel)
-                            .setField(MultipleFields.ID, id)
-                            .build();
-                    medicineHistoryList.add(entity);
-                }
-            }
-        }
-    }*/
-
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        //medicinePlanExpandableListViewAdapter = new MedicinePlanExpandableListViewAdapter( dataset,parentList,null, IndexDelegate.this);
-        //mExpandableListView.setAdapter(medicinePlanExpandableListViewAdapter);
-        //initView();
-        //medicineHistoryRecyclerViewAdapter= MultipleRecyclerAdapter.create(medicineHistoryList,this.getParentDelegate());
-        //mRecyclerViewHistory.setAdapter(medicineHistoryRecyclerViewAdapter);
-    }
-    private void refresh(){
-        if(mRefreshLayout!=null)
-            mRefreshLayout.setRefreshing(true);
-        Latte.getHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //getMedicinePlan();
-               // getMedicineHistory();
-                //可以进行网络请求，REFESH_LAYOUT.setRefreshing(false);可以放入网络请求的success回调
-                mRefreshLayout.setRefreshing(false);
-            }
-        },2000);
-    }
-
-
-/*    public void initView() {
-        myAdapter = new MyElvAdapterForIndex(context, mExpandableListView,list);
-        mExpandableListView.setAdapter(myAdapter);
-        mExpandableListView.setGroupIndicator(null);
-    }
-    private void initData(String responseJsonString) {
-        list.clear();
-        final JSONObject jsonObject = JSON.parseObject(responseJsonString);
-        final JSONObject data = jsonObject.getJSONObject("detail");
-        final JSONArray dataArray = data.getJSONArray("planlist");
-        int size = dataArray.size();
-        for (int i = 0; i < size; i++) {
-            MedicinePlanInfo medicinePlanInfo=new MedicinePlanInfo();
-            JSONObject jsondata = (JSONObject) dataArray.get(i);
-            String medicineUseTime=jsondata.getString("time");
-            medicinePlanInfo.setTimeString(medicineUseTime);
-            JSONArray jsonArray = jsondata.getJSONArray("plans");
-            int lenght = jsonArray.size();
-            List<MedicinePlan> childrenList = new ArrayList<>();
-            for (int j = 0; j < lenght; j++) {
-                JSONObject jsonObject1 = (JSONObject) jsonArray.get(j);
-                MedicinePlan medicinePlan = new MedicinePlan();
-                medicinePlan.setAtime(jsonObject1.getString("atime"));
-                medicinePlan.setEndRemind(jsonObject1.getString("endRemind"));
-                medicinePlan.setId(jsonObject1.getString("id"));
-                medicinePlan.setMedicineUseCount(jsonObject1.getIntValue("medicineUseCount"));
-                medicinePlan.setMedicineType(jsonObject1.getIntValue("medicineType"));
-                medicinePlan.setStartRemind(jsonObject1.getString("startRemind"));
-                medicinePlan.setMedicineName(jsonObject1.getString("medicineName"));
-                medicinePlan.setBoxId(jsonObject1.getString("boxId"));
-                childrenList.add(medicinePlan);
-            }
-            medicinePlanInfo.setDatas(childrenList);
-            list.add(medicinePlanInfo);
-
-        }
-
-    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //StatusBarCompat.translucentStatusBar(getActivity(),false);
-        int color=getResources().getColor(R.color.Apricot);
-       // StatusBarCompat.setStatusBarColor(getActivity(),color);
+        final Bundle args = getArguments();
+        if (args != null) {
+            command = args.getString(COMMAND);
+        }
     }
 
+    @Override
+    public void onLazyInitView(@Nullable Bundle savedInstanceState) {
+        super.onLazyInitView(savedInstanceState);
+        initRefreshLayout();
+        initRecyclerView();
+        initBasicData(command);
+        //mRefreshHandler.injectDataIntoRecy("index");
+    }
+    public void initMarkData(String markJson)
+    {
+        this.markJson=markJson;
+    }
+    public void initBasicData(String command) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        //mTime.setText(format.format(date));
+        final JSONObject commandJson= JSON.parseObject(command).getJSONObject("data");
+        mName.setText(commandJson.getString("name"));
+        mDepartment.setText(commandJson.getString("department"));
+        mGun.setText(commandJson.getString("shooting_gun"));
+        mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
+        mGroupNumber.setText(commandJson.getString("group_number"));
+        mTargetNumber.setText(commandJson.getString("target_number"));//靶位编号
+        target_index=commandJson.getString("target_number");//将靶位编号取出打靶完毕后，用于将打靶完毕信息返回给ｓｅｒｖｅｒ
+        group_index=commandJson.getString("group_number");//\
+        traineeId=commandJson.getString("userId");
+    }
+
+    private void initRecyclerView() {
+        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(getContext());
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+    }
+    @Override
+    public Object setLayout() {
+        return R.layout.delegate_mark;
+    }
+    @Override
+    public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
+        mRefreshHandler=RefreshHandler.create(mRefreshLayout,mRecyclerView,new MarkDataConverter(),new PagingBean());
+        ViewTreeObserver observer = mLlcPersonData.getViewTreeObserver();
+//        if(observer!=null) {
+//            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+//                @Override
+//                public boolean onPreDraw() {
+//
+//                    if(mLlcPersonData!=null) {
+//                        llcPersonDataHeight = mLlcPersonData.getHeight();
+//                    }
+//                    if(mTvPersonData!=null) {
+//                        tvPersonDataHeight = mTvPersonData.getHeight();
+//                    }
+//                    if(mRefreshLayout!=null) {
+//                        srlMarkHeight = mRefreshLayout.getHeight();
+//                    }
+//
+//                    if( mTvPersonData!=null) {
+//                        LinearLayoutCompat.LayoutParams lp = (LinearLayoutCompat.LayoutParams) mTvPersonData.getLayoutParams();//
+//                        lp.setMargins(10, -(llcPersonDataHeight + srlMarkHeight  + tvPersonDataHeight-10), 0, 0);
+//                        mTvPersonData.setLayoutParams(lp);
+//                    }
+//                    return true;
+//
+//                }
+//            });
+//        }
+
+    }
+    private IMarkAttachListener markAttachListener=null;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if(activity instanceof IMarkAttachListener)
+        {
+            markAttachListener=(IMarkAttachListener)activity;
+            //markAttachListener.setMarkDelegate(this);
+        }
+    }
+    public MarkDisplay getMarkDisplay() {
+        return markDisplay;
+    }
+    private class send extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... Message) {
+            try {
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.setHost(server);
+                factory.setUsername(username);
+                factory.setPassword(password);
+                factory.setPort(port);
+                MessagetoServer message=new MessagetoServer();
+                message.setCode(0);//code=0表示打靶完毕，
+                message.setGroup_index(Integer.parseInt(group_index.trim()));
+                message.setTarget_index(Integer.parseInt(target_index.trim()));
+                message.setTraineeId(traineeId);
+                Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel();
+                channel.basicPublish(exchangeName, routingKey, null,JSONObject.toJSONString(message).getBytes());
+                channel.close();
+                connection.close();
+            } catch (Exception e) {
+                // TODO: handle exception
+                e.printStackTrace();
+            }
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+    }
 }

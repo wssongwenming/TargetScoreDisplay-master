@@ -1,5 +1,6 @@
 package com.hmy.popwindow.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -15,6 +16,7 @@ import com.hmy.popwindow.R;
 /**
  * Created by HMY on 2016/9/10.
  */
+@SuppressLint("AppCompatCustomView")
 public class PopItemView extends TextView implements View.OnClickListener {
 
     private PopItemAction mPopItemAction;

@@ -23,7 +23,8 @@
         android:textColor="@android:color/white"
         android:textSize="20sp"
         android:gravity="center"
-        android:background="@drawable/border_circle_timer"/>
+        android:background="@drawable/border_circle_timer"
+        />
 
         <android.support.v7.widget.AppCompatTextView
             android:layout_centerInParent="true"

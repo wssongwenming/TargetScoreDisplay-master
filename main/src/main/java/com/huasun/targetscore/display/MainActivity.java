@@ -35,6 +35,7 @@ import com.huasun.display.sign.SignInBottomDelegate;
 import com.huasun.display.sign.SignInByFace.SignInByFaceRecDelegate;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 
+import com.huasun.display.wait.WaitDelegate;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -100,7 +101,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                     } else if (dataType == DataType.LAUNCH.getCode()) {
                         startWithPop(new LauncherDelegate());
                     } else if (dataType == DataType.SIGNINBYPASS.getCode()) {
-                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), "ok", Toast.LENGTH_LONG).show();
+                        //Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), "ok", Toast.LENGTH_LONG).show();
                         startWithPop(SignInByPassDelegate.newInstance(message));
                     } else if (dataType == DataType.SIGNINBYFACE.getCode()) {
                         startWithPop(SignInByFaceRecDelegate.newInstance(message));
@@ -122,7 +123,6 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                         String exchangeName="display-to-server-exchange";
                         String routingKey="display-to-server-routing-key";
                         new send().execute(deviceId+"",deviceGroupIndex+"",exchangeName,routingKey);
-
 /*
                         public class Command {
                             private int code;
@@ -153,7 +153,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
 
     @Override
     public void onSignInSuccess(int index, String command) {
-        startWithPop(new LauncherDelegate());
+        startWithPop(new WaitDelegate());
     }
 
     @Override

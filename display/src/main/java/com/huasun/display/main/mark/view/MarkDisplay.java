@@ -103,10 +103,10 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
 
     private float mMarkTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 18, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics());
 
     private float mMarkRingRadius = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 4, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 7, getResources().getDisplayMetrics());
 
     public MarkDisplay(Context context) {
         super(context);
@@ -170,14 +170,15 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
         mTextTenPaint.setTextSize(mTextSize);
         //初始化绘制弹孔的画笔
         mMarkRingPaint = new Paint();
-        mMarkRingPaint.setColor(0xFFFF0000);
+//      mMarkRingPaint.setColor(0xFFFF0000);
+        mMarkRingPaint.setColor(0xFF000000);
         mMarkRingPaint.setAntiAlias(true);
         mMarkRingPaint.setStyle(Paint.Style.FILL);
         mMarkRingPaint.setStrokeWidth((float) 2.0); //线宽
         mMarkRingPaint.setDither(true);
 
         mMarkTextPaint=new Paint();
-        mMarkTextPaint.setColor(0xFFFFD700);
+        mMarkTextPaint.setColor(0xFF000099);
         mMarkTextPaint.setTextSize(mMarkTextSize);
         // 开启线程
         isRunning = true;
