@@ -5,11 +5,22 @@ import android.widget.Toast;
 
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
+import com.rabbitmq.client.BlockedListener;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Recoverable;
+import com.rabbitmq.client.RecoveryListener;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
+import com.rabbitmq.client.impl.recovery.AutorecoveringChannel;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Base class for objects that connect to a RabbitMQ Broker
@@ -20,7 +31,8 @@ public abstract class IConnectToRabbitMQ {
     public int mPort;
     public String mUsername;
     public String mPassWord;
-
+    protected String virtualHost;
+    // connection to AMQP server,
     protected Channel mModel = null;//channel
     protected Connection mConnection;
 
@@ -51,12 +63,14 @@ public abstract class IConnectToRabbitMQ {
 
         try {
             if (mModel != null)
-                mModel.abort();
+                mModel.close();
             if (mConnection!=null)
                 mConnection.close();
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (TimeoutException e) {
             e.printStackTrace();
         }
 
@@ -68,7 +82,7 @@ public abstract class IConnectToRabbitMQ {
      */
     public boolean connectToRabbitMQ()
     {
-      /*        if(mModel!= null && mModel.isOpen() )//already declared
+      /*    if(mModel!= null && mModel.isOpen() )//already declared
             return true;*/
         try
         {
@@ -82,11 +96,16 @@ public abstract class IConnectToRabbitMQ {
             connectionFactory.setUsername(mUsername);
             connectionFactory.setPassword(mPassWord);
             connectionFactory.setPort(mPort);
+
+
             mConnection = connectionFactory.newConnection();
+
             //创建一个通道
-            mModel = mConnection.createChannel();
+           mModel = mConnection.createChannel();
+
             //只有在channel.basicQos被使用的时候channel.basicAck(delivery.getEnvelope().getDeliveryTag(),false)才起到作用。
-            mModel.basicQos(1);
+//            mModel.basicQos(1);
+            mModel.basicQos(0, 1, false);
             //创建一个的交换器
             //exchangeDeclare(String exchange, String type, boolean durable, boolean autoDelete,
             //                                       Map<String, Object> arguments) throws IOException;
@@ -106,4 +125,7 @@ public abstract class IConnectToRabbitMQ {
             return false;
         }
     }
+
+
+
 }

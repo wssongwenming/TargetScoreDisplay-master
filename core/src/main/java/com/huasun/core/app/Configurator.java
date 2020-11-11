@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Handler;
 
 import com.huasun.core.rabbitmq.MessageConsumer;
+import com.huasun.core.rabbitmq.MyMessageConsumer;
+import com.huasun.core.rabbitmq.RabbitMQConsumer;
 import com.joanzapata.iconify.IconFontDescriptor;
 import com.joanzapata.iconify.Iconify;
 
@@ -58,6 +60,11 @@ public class Configurator {
         return this;
     }
 
+    public final Configurator withRabbitmqConsumer(RabbitMQConsumer messageConsumer)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.MESSAGECONSUMER,messageConsumer);
+        return this;
+    }
 
     public final Configurator withCommand(int command){
         LATTE_CONFIGS.put(ConfigKeys.COMMAND,command);

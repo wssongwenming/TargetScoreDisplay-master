@@ -11,10 +11,11 @@ import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.rabbitmq.MessageConsumer;
+import com.huasun.core.rabbitmq.RabbitMQConsumer;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.QueueingConsumer;
+
 
 /**
  * author:songwenming
@@ -29,14 +30,15 @@ public abstract class BottomItemDelegate extends LatteDelegate {
     @Override
     public boolean onBackPressedSupport() {
         if (System.currentTimeMillis() - TOUCH_TIME < WAIT_TIME) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ((MessageConsumer)Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER)).Dispose();//关闭消息队列
-                }
-            }).start();
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    ((RabbitMQConsumer)Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER)).Dispose();//关闭消息队列
+//                }
+//            }).start();
            // ((MessageConsumer)Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER)).Dispose();//关闭消息队列
             _mActivity.finish();
+            System.exit(0);
         } else {
             TOUCH_TIME = System.currentTimeMillis();
             Toast.makeText(_mActivity, "再单击一次退出" + Latte.getApplicationContext().getString(R.string.app_name), Toast.LENGTH_SHORT).show();

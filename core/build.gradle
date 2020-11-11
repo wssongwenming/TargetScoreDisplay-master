@@ -6,7 +6,7 @@ android {
 
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -22,6 +22,10 @@ android {
         }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -101,6 +105,11 @@ dependencies {
 
     compile files('libs/commons-cli-1.1.jar')
     compile files('libs/commons-io-1.2.jar')
-    compile files('libs/rabbitmq-client.jar')
+//    compile files('libs/rabbitmq-client.jar')
+//    compile 'com.rabbitmq:amqp-client:5.9.0'
+    compile 'com.rabbitmq:amqp-client:4.12.0'
+
+    compile 'log4j:log4j:1.2.17'
+//
 
 }

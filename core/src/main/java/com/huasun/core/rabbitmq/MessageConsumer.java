@@ -61,7 +61,8 @@ public class MessageConsumer extends IConnectToRabbitMQ {
     /**
      * Create Exchange and then start consuming. A binding needs to be added before any messages will be delivered
      */
-    public boolean connectToRabbitMQ(String queueName,String exchangeName,String routingKey)
+//    public boolean connectToRabbitMQ(String queueName,String exchangeName,String routingKey)
+    public boolean connectToRabbitMQ(String queueName,String routingKey)
     {
         if(super.connectToRabbitMQ())
         {
@@ -70,14 +71,14 @@ public class MessageConsumer extends IConnectToRabbitMQ {
                 //queueDeclare (String queue , boolean durable , boolean exclusive , boolean autoDelete , Map arguments)
                 mQueue = mModel.queueDeclare(queueName,false,false,true,null).getQueue();
                 MySubscription = new QueueingConsumer(mModel);
-                mModel.basicConsume(mQueue, false, MySubscription);
+                mModel.basicConsume(mQueue, false,"cc", MySubscription);
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
             }
             if (MyExchangeType == "topic"||MyExchangeType == "direct")
-                AddBindingQueue(queueName,exchangeName,routingKey);
-
+                //AddBindingQueue(queueName,exchangeName,routingKey);
+                AddBindingQueue(queueName,mExchange,routingKey);
             Running = true;
             mConsumeHandler.post(mConsumeRunner);
 
@@ -142,7 +143,7 @@ public class MessageConsumer extends IConnectToRabbitMQ {
 
     }
 
-    public void dispose(){
-        Running = false;
-    }
+//    public void dispose(){
+//        Running = false;
+//    }
 }

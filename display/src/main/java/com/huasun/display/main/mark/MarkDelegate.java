@@ -112,7 +112,6 @@ public class MarkDelegate extends BottomItemDelegate {
         AppCompatTextView user_name_textView=customView.findViewById(R.id.tv_user_name);
         AppCompatTextView shooting_info_textView=customView.findViewById(R.id.tv_shooting_info);
         AppCompatTextView shooting_score_textView=customView.findViewById(R.id.tv_shooting_score);
-
         MultipleRecyclerAdapter multipleRecyclerAdapter= (MultipleRecyclerAdapter)mRecyclerView.getAdapter();
         int ringSum= 0;
         if(multipleRecyclerAdapter!=null) {
@@ -142,8 +141,6 @@ public class MarkDelegate extends BottomItemDelegate {
                 }))
                 .create();
         popWindow.show();
-
-
     }
     private String command;
     public RefreshHandler mRefreshHandler;
@@ -161,7 +158,6 @@ public class MarkDelegate extends BottomItemDelegate {
         delegate.setArguments(args);
         return delegate;
     }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -325,4 +321,11 @@ public class MarkDelegate extends BottomItemDelegate {
         }
 
     }
+    //          2020.10.30添加可能引发错误
+    @Override
+    public void onDestroyView() {
+
+        super.onDestroyView();
+    }
+    //          2020.10.30添加可能引发错误
 }

@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.huasun.core.activities.ProxyActivity;
 import com.huasun.core.app.ConfigKeys;
@@ -21,10 +22,13 @@ import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
 
 import com.huasun.core.rabbitmq.MessageConsumer;
+import com.huasun.core.rabbitmq.RabbitMQConsumer;
 import com.huasun.core.ui.launcher.ILauncherListener;
 import com.huasun.core.ui.launcher.OnLauncherFinishTag;
 import com.huasun.core.util.ActivityManager;
 import com.huasun.core.util.DataCleanManager;
+import com.huasun.core.util.SoundPoolUtil;
+import com.huasun.core.util.asyncplayer.AsyncPlayer;
 import com.huasun.display.entity.MessagetoServer;
 import com.huasun.display.launcher.LauncherDelegate;
 import com.huasun.display.main.mark.IMarkAttachListener;
@@ -47,15 +51,18 @@ import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener {
-
-    private ConnectionFactory factory = new ConnectionFactory();// 声明ConnectionFactory对象
-
+    //资源列表,用于播放声音
+    private Map<String, Integer> map ;
+    private List<Integer> zh ;
     private MarkDelegate markDelegate;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
-    private MessageConsumer mConsumer;
+    private RabbitMQConsumer mConsumer;
     private String server = "192.168.1.3";
     private String exchange_name = "server-to-display-exchange";
     private String exchange_type = "topic";
@@ -80,9 +87,10 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         routingKey = "server-to-display-routing-key-" + mac;
 
         //开始消息队列
-        //mConsumer = new MessageConsumer(server, exchange_name, exchange_type,port,username,password);
-        mConsumer = Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
+//        mConsumer = Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
+        mConsumer=new RabbitMQConsumer(server,exchange_name,port,username,password,exchange_type,queueName,routingKey);
         new consumerconnect().execute();
+
         mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
             @TargetApi(Build.VERSION_CODES.O)
             @Override
@@ -113,9 +121,46 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                             if (markDisplay != null) {
                                 markDisplay.setMarkJson(message);
                                 markDelegate.mRefreshHandler.initData(message);
+                                if(message!=null&&!message.isEmpty()) {
+                                    final JSONArray increasedRingNumberArray = JSON.parseObject(message).getJSONArray("increasedRingNumbers");
+                                    System.out.print("increadringnumber=" + increasedRingNumberArray);
+                                    int size=increasedRingNumberArray.size();
+                                    final List<String> ringNumberlists = new ArrayList<>() ;
+                                    for (int i=0;i<size;i++){
+                                        String ringnumber= String.valueOf((increasedRingNumberArray.getInteger(i)));
+                                        ringNumberlists.add(ringnumber);
+                                    }
+                                    if(size>0){
+                                        new Thread(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+//                                                List<String> lists = new ArrayList<>() ;
+//                                                lists.add("cat");
+                                                //播放6次猫叫和鸟叫(组合播放)
+                                                zh = SoundPoolUtil.getInstance().play(ringNumberlists, 0) ;
+                                            }
+                                        }).start();
+//                                        new Thread() {
+//                                            private List<String> ringNumber = new ArrayList<>() ;
+//                                            public Thread setRingNumberList(List<String> stringList) {
+//                                                this.ringNumber = stringList;
+//                                                return this;
+//                                            }
+//
+//                                            @Override
+//                                            public void run() {
+//                                                zh = SoundPoolUtil.getInstance().play(ringNumber, 6) ;
+//                                            }
+//                                        }.start();
+                                    }
+                                }
+
+
+
                             }
                         }
-                    } else if (dataType == DataType.DEVICESTATUS.getCode()) {
+                    } else if (dataType == DataType.DEVICESTATUS.getCode()) {//服务器端发出了查询display端状态
                         JSONObject data=command.getJSONObject("data");
                         int deviceId=data.getIntValue("deviceId");
                         int deviceGroupIndex=data.getIntValue("deviceGroupIndex");
@@ -144,8 +189,23 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                 }
             }
         });
+        init();
     }
-
+    private void init() {
+        map = new HashMap<>() ;
+        map.put("0", R.raw.zero);
+        map.put("1", R.raw.one) ;
+        map.put("2", R.raw.two) ;
+        map.put("3", R.raw.three) ;
+        map.put("4", R.raw.four) ;
+        map.put("5", R.raw.five) ;
+        map.put("6", R.raw.six) ;
+        map.put("7", R.raw.seven) ;
+        map.put("8", R.raw.eight) ;
+        map.put("9", R.raw.nine) ;
+        map.put("10", R.raw.ten) ;
+        SoundPoolUtil.getInstance().loadR(this, map);
+    }
     @Override
     public LatteDelegate setRootDelegate() {
         return new LauncherDelegate();
@@ -211,9 +271,8 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         @Override
         protected Void doInBackground(String... Message) {
             try {
-                // Connect to broker
-                mConsumer.connectToRabbitMQ(queueName, exchange_name, routingKey);
-
+//             mConsumer.connectToRabbitMQ(queueName,routingKey);
+               mConsumer.connectToRabbitMQ();
             } catch (Exception e) {
                 // TODO: handle exception
                 e.printStackTrace();
@@ -226,17 +285,15 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
 
     protected void onResume() {
         super.onResume();
-        new consumerconnect().execute();
+//        new consumerconnect().execute();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mConsumer.Dispose();//此处需要认证考虑
-        Toast.makeText(this, "hello", Toast.LENGTH_LONG).show();
-
+        Toast.makeText(this, "正在退出", Toast.LENGTH_LONG).show();
     }
-
     /**
      * Android 6.0 之前（不包括6.0）获取mac地址
      * 必须的权限 <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>

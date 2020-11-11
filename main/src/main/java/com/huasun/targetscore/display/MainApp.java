@@ -5,6 +5,8 @@ import android.app.Application;
 import com.huasun.core.app.Latte;
 import com.huasun.core.net.interceptors.DebugInterceptor;
 import com.huasun.core.rabbitmq.MessageConsumer;
+import com.huasun.core.rabbitmq.MyMessageConsumer;
+import com.huasun.core.rabbitmq.RabbitMQConsumer;
 import com.huasun.display.database.DatabaseManager;
 import com.huasun.display.icon.FontBcModule;
 import com.huasun.targetscore.exception.SecyrityCrash;
@@ -30,7 +32,8 @@ public class MainApp extends Application {
                 .withIcon(new FontAwesomeModule())
                 .withIcon(new FontBcModule())
                 .withCommand(0)
-                .withMessageConsumer(new MessageConsumer(server,exchange_name,exchange_type,port,username,password))
+//                .withRabbitmqConsumer(new RabbitMQConsumer(server,exchange_name,port,username,password,exchange_type))
+//                .withMyMessageConsumer(new MyMessageConsumer(server,exchange_name,exchange_type,port,username,password))
                 .withApiHost("http://127.0.0.1")
                 .withInterceptor(new DebugInterceptor("index",R.raw.test))
                 .configure();

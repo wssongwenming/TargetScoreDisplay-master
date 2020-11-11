@@ -34,15 +34,18 @@ public class MarkDataConverter extends DataConverter {
 //        ENTITIES.add(title);
         String json=getJsonData();
         if(json!=null&&!json.isEmpty()) {
-            final JSONArray dataArray = JSON.parseObject(json).getJSONArray("holes");
-            final int size = dataArray.size();
+            final JSONArray holeArray = JSON.parseObject(json).getJSONArray("holes");
+//          2020.10.30添加可能引发错误
+            final JSONArray increasedRingNumberArray=JSON.parseObject(json).getJSONArray("increasedRingNumbers");
+            System.out.print("increadringnumber="+increasedRingNumberArray);
+            final int size = holeArray.size();
             for (int i = 0; i < size; i++) {
-                final JSONObject data = dataArray.getJSONObject(i);
-                final int id = data.getInteger("id");
-                final String ringNumber = data.getString("score");
-                final String offset = data.getString("offset");
+                final JSONObject hole = holeArray.getJSONObject(i);
+                final int id = hole.getInteger("id");
+                final String ringNumber = hole.getString("score");
+                final String offset = hole.getString("offset");
                 final String offsetDirection=offset.equalsIgnoreCase("u")? "上":(offset.equalsIgnoreCase("d")?"下":(offset.equalsIgnoreCase("l")?"左":(offset.equalsIgnoreCase("r")?"右":(offset.equalsIgnoreCase("lu")?"左上":(offset.equalsIgnoreCase("ru")?"右上":(offset.equalsIgnoreCase("ld")?"左下":(offset.equalsIgnoreCase("rd")?"右下":"未知")))))));
-                final String shootingTime = data.getString("shootingTime");
+                final String shootingTime = hole.getString("shootingTime");
                 int type = ItemType.TEXT_TEXT;
                 final MultipleItemEntity entity = MultipleItemEntity.builder()
                         .setFiled(MultipleFields.ID, id)

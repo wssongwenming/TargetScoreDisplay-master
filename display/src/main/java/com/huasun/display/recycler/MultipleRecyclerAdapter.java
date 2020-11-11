@@ -66,7 +66,10 @@ public class MultipleRecyclerAdapter extends BaseMultiItemQuickAdapter<MultipleI
                 shootingTime=entity.getField(MultipleFields.SHOOTINGTIE);
                 int postion=holder.getLayoutPosition();
                 if(postion%2==0){
-                    //holder.setBackgroundColor(R.id.tv_shooting_time,Color.GRAY);
+                    holder.setBackgroundColor(R.id.tv_shooting_time,0xFFECECEC);
+                    holder.setBackgroundColor(R.id.tv_id,0xFFECECEC);
+                    holder.setBackgroundColor(R.id.tv_ring_number,0xFFECECEC);
+                    holder.setBackgroundColor(R.id.tv_offset_direction,0xFFECECEC);
                 }else {
                     holder.setBackgroundColor(R.id.tv_id,Color.WHITE);
                     holder.setBackgroundColor(R.id.tv_ring_number,Color.WHITE);

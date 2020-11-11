@@ -1,17 +1,26 @@
 package com.huasun.display.refresh;
 
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Build;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.view.View;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.huasun.core.app.Latte;
 import com.huasun.core.net.RestClient;
 import com.huasun.core.net.callback.ISuccess;
+import com.huasun.display.R;
 import com.huasun.display.recycler.DataConverter;
+import com.huasun.display.recycler.ItemType;
+import com.huasun.display.recycler.MultipleFields;
+import com.huasun.display.recycler.MultipleItemEntity;
 import com.huasun.display.recycler.MultipleRecyclerAdapter;
 import com.huasun.display.recycler.StickHeaderDecoration;
 
@@ -40,6 +49,7 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
         this.CONVERTER=dataConverter;
         this.BEAN=pagingBean;
         REFRESH_LAYOUT.setOnRefreshListener(this);
+
     }
 
     public static RefreshHandler create(SwipeRefreshLayout refresh_layout,RecyclerView recyclerView,
@@ -55,12 +65,8 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
             }
         },2000);
     }
-
-
-
     public void initData (String json){
                         keys.put(0,"我是第0个标题");
-
                         mAdapter=MultipleRecyclerAdapter.create(CONVERTER.setJsonData(json));
                         mAdapter.setOnLoadMoreListener(RefreshHandler.this,RECYCLERVIEW);
                         RECYCLERVIEW.setAdapter(mAdapter);
@@ -68,6 +74,8 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
                         RECYCLERVIEW.scrollToPosition(mAdapter.getItemCount()-1);
 
     }
+
+
 
     @Override
     public void onRefresh() {
@@ -80,4 +88,6 @@ public class RefreshHandler implements SwipeRefreshLayout.OnRefreshListener,Base
         mAdapter.loadMoreEnd(true);
         mAdapter.loadMoreComplete();
     }
+
+
 }

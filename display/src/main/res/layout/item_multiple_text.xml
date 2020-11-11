@@ -3,9 +3,10 @@
     android:layout_width="match_parent"
 
     android:background="#ececec"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:orientation="vertical"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginBottom="2dp"
+
     android:layout_height="wrap_content">
 
     <android.support.v7.widget.LinearLayoutCompat
@@ -17,10 +18,10 @@
             android:id="@+id/tv_id"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:background="#ececec"
+
             android:textColor="@color/black"
             android:text="序号"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="left"
@@ -29,10 +30,9 @@
             android:id="@+id/tv_ring_number"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:background="#ececec"
             android:textColor="@color/Red"
             android:text="环数"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="left"
@@ -41,7 +41,7 @@
             android:id="@+id/tv_offset_direction"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:background="#ececec"
+
             android:textColor="@color/black"
             android:text="偏移方向"
             android:textSize="20sp"
@@ -55,7 +55,7 @@
             android:gravity="left"
             android:layout_width="0dp"
             android:layout_weight="2"
-            android:background="#ececec"
+
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold"
