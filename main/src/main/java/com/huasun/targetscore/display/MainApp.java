@@ -12,6 +12,9 @@ import com.huasun.display.icon.FontBcModule;
 import com.huasun.targetscore.exception.SecyrityCrash;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
+import java.util.PriorityQueue;
+import java.util.Queue;
+
 /**
  * author:songwenming
  * Date:2019/9/21
@@ -35,6 +38,7 @@ public class MainApp extends Application {
 //                .withRabbitmqConsumer(new RabbitMQConsumer(server,exchange_name,port,username,password,exchange_type))
 //                .withMyMessageConsumer(new MyMessageConsumer(server,exchange_name,exchange_type,port,username,password))
                 .withApiHost("http://127.0.0.1")
+                .withQueue(new PriorityQueue())
                 .withInterceptor(new DebugInterceptor("index",R.raw.test))
                 .configure();
         DatabaseManager.getInstance().init(this);

@@ -57,6 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener {
+    DataHandler dataHandler = DataHandler.getInstance();
     //资源列表,用于播放声音
     private Map<String, Integer> map ;
     private List<Integer> zh ;
@@ -122,23 +123,27 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                                 markDisplay.setMarkJson(message);
                                 markDelegate.mRefreshHandler.initData(message);
                                 if(message!=null&&!message.isEmpty()) {
-                                    final JSONArray increasedRingNumberArray = JSON.parseObject(message).getJSONArray("increasedRingNumbers");
-                                    System.out.print("increadringnumber=" + increasedRingNumberArray);
-                                    int size=increasedRingNumberArray.size();
+                                    final JSONArray increasedRingNumbersOffsetArray = JSON.parseObject(message).getJSONArray("increasedRingNumbersAndOffset");
+                                    System.out.print("increadringnumber=" + increasedRingNumbersOffsetArray);
+                                    int size=increasedRingNumbersOffsetArray.size();
                                     final List<String> ringNumberlists = new ArrayList<>() ;
-                                    for (int i=0;i<size;i++){
-                                        String ringnumber= String.valueOf((increasedRingNumberArray.getInteger(i)));
+                                    for (int i=0;i<size;i++){//increasedRingNumbersOffsetArray的数据是：ringnumber，offset，ringnumber，offset
+
+                                        String ringnumber= String.valueOf((increasedRingNumbersOffsetArray.getInteger(i)));
+                                        i++;
+                                        String offset= String.valueOf((increasedRingNumbersOffsetArray.getString(i)));
+
+                                        dataHandler.addData(ringnumber,offset);
                                         ringNumberlists.add(ringnumber);
                                     }
                                     if(size>0){
                                         new Thread(new Runnable() {
-
                                             @Override
                                             public void run() {
 //                                                List<String> lists = new ArrayList<>() ;
 //                                                lists.add("cat");
                                                 //播放6次猫叫和鸟叫(组合播放)
-                                                zh = SoundPoolUtil.getInstance().play(ringNumberlists, 0) ;
+//                                                zh = SoundPoolUtil.getInstance().play(ringNumberlists, 0) ;
                                             }
                                         }).start();
 //                                        new Thread() {
@@ -204,6 +209,14 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         map.put("8", R.raw.eight) ;
         map.put("9", R.raw.nine) ;
         map.put("10", R.raw.ten) ;
+        map.put("u",R.raw.u);
+        map.put("d",R.raw.d);
+        map.put("lu",R.raw.lu);
+        map.put("ru",R.raw.ru);
+        map.put("ld",R.raw.ld);
+        map.put("rd",R.raw.rd);
+        map.put("l",R.raw.l);
+        map.put("r",R.raw.r);
         SoundPoolUtil.getInstance().loadR(this, map);
     }
     @Override
@@ -452,6 +465,14 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             return null;
         }
 
+    }
+    //启动一个线程监听全局队列并播放声音靶环和偏移方向队列，
+    class getRingNumbersOffsetThread extends Thread{
+        @Override
+        public void run() {
+            super.run();
+            //干你需要做的操作
+        }
     }
 }
 

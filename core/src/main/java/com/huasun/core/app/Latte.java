@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import java.util.HashMap;
+import java.util.Queue;
 
 /**
  * author:songwenming
@@ -34,5 +35,8 @@ public final class Latte {
     }
     public static Handler getHandler() {
         return getConfiguration(ConfigKeys.HANDLER);
+    }
+    public static Queue getQueue(){
+        return (Queue) getConfigurations().get(ConfigKeys.QUEUE);
     }
 }

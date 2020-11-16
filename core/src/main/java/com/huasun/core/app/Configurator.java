@@ -11,6 +11,7 @@ import com.joanzapata.iconify.Iconify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Queue;
 
 import okhttp3.Interceptor;
 
@@ -85,6 +86,11 @@ public class Configurator {
         return this;
     }
 
+    public final Configurator withQueue(Queue queue){
+        LATTE_CONFIGS.put(ConfigKeys.QUEUE,queue);
+        return this;
+    }
+
 
 
     private final Configurator withInterceptors(ArrayList<Interceptor> interceptors){
@@ -119,5 +125,6 @@ public class Configurator {
         }
         return (T) LATTE_CONFIGS.get(key);
     }
+
 
 }

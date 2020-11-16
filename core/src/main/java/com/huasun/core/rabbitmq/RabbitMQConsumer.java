@@ -1,8 +1,12 @@
 package com.huasun.core.rabbitmq;
 
+import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.huasun.core.app.ConfigKeys;
+import com.huasun.core.app.Latte;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.BlockedListener;
@@ -111,6 +115,7 @@ public class RabbitMQConsumer {
         try {
             mConnection = getConnection();
             mModel = createChannel(mConnection);
+            mModel.basicQos(0, 10, false);
             createExchange(mModel, amqpExchangeName);
             mModel.queueDeclare(queueName, false, false, true, null);
             mModel.queueBind(queueName, amqpExchangeName, routingKey);
@@ -119,8 +124,7 @@ public class RabbitMQConsumer {
                 @Override
                 public void handleDelivery(String queueName, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 
-                    Thread thread = new Thread()
-                    {
+                    Thread thread = new Thread() {
                         @Override
                         public void run() {
                             try {
@@ -141,14 +145,23 @@ public class RabbitMQConsumer {
                     thread.start();
                 }
             });
-
-        }catch (AlreadyClosedException closedException) {
-            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", closedException);
-        } catch (ConnectException connectException) {
-            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", connectException);
-        } catch (Exception e) {
-            throw new Exception("Failed to subscribe to event due to " + e.getMessage());
-        }
+//        }catch (AlreadyClosedException closedException) {
+//            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", closedException);
+//        } catch (ConnectException connectException) {
+//            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", connectException);
+//        } catch (Exception e) {
+//            throw new Exception("Failed to subscribe to event due to " + e.getMessage());
+//        }
+          }catch (Exception e)
+            {
+                e.printStackTrace();
+                Latte.getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"APP未能正常连接消息队列，请检查设置后，并重新启动App!!!",Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
     }
 
     private synchronized Connection getConnection() throws Exception {
@@ -248,7 +261,9 @@ public class RabbitMQConsumer {
                          *  with binding key formed from event topic
                          */
                         Channel channel = createChannel(connection);
+                        channel.basicQos(0, 10, false);
                         createExchange(channel, amqpExchangeName);
+
                         channel.queueDeclare(queueName, false, false, true, null);
                         channel.queueBind(queueName, amqpExchangeName, routingKey);
 
