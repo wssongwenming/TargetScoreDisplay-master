@@ -27,7 +27,7 @@ public class PopItemView extends TextView implements View.OnClickListener {
         mPopItemAction = popItemAction;
         mPopWindow = windowController;
 
-        int padding = getResources().getDimensionPixelOffset(R.dimen.pop_item_padding);
+        int padding = getResources().getDimensionPixelOffset(R.dimen.dp_10);
         setPadding(padding, padding, padding, padding);
         setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         if (popItemAction != null) {
@@ -43,7 +43,7 @@ public class PopItemView extends TextView implements View.OnClickListener {
         setGravity(Gravity.CENTER);
         setClickable(true);
         setOnClickListener(this);
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelOffset(R.dimen.pop_item_text_size));
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimensionPixelOffset(R.dimen.sp_45));
         setText(popItemAction.getText());
     }
 

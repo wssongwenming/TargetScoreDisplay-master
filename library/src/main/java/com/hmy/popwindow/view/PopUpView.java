@@ -41,7 +41,7 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
         mTitleTv = new TextView(context);
         mTitleTv.setGravity(Gravity.CENTER);
         mTitleTv.setBackgroundResource(android.R.color.transparent);
-        int padding = getResources().getDimensionPixelOffset(R.dimen.pop_item_padding);
+        int padding = getResources().getDimensionPixelOffset(R.dimen.dp_5);
         mTitleTv.setPadding(padding * 2, padding, padding * 2, padding);
         mTitleTv.setClickable(true);
 
@@ -57,9 +57,9 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
 
     private void initTextAndMessage() {
         mTitleColor = getResources().getColor(R.color.pop_action_sheet_title);
-        mTitleTextSize = getResources().getDimensionPixelOffset(R.dimen.pop_action_sheet_text_size_title);
+        mTitleTextSize = getResources().getDimensionPixelOffset(R.dimen.sp_10);
         mMessageColor = getResources().getColor(R.color.pop_action_sheet_message);
-        mMessageTextSize = getResources().getDimensionPixelOffset(R.dimen.pop_action_sheet_text_size_message);
+        mMessageTextSize = getResources().getDimensionPixelOffset(R.dimen.sp_40);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
                     mCancelItemView.setBackgroundResource(R.drawable.pop_selector_cancel_square);
                 }
                 MarginLayoutParams params = (MarginLayoutParams) mCancelItemView.getLayoutParams();
-                params.topMargin = getResources().getDimensionPixelOffset(R.dimen.pop_item_padding);
+                params.topMargin = getResources().getDimensionPixelOffset(R.dimen.dp_5);
                 addView(popItemView);
             } else {
                 throw new RuntimeException("PopWindow 只能添加一个取消操作");
@@ -145,6 +145,7 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
         mIsShowCircleBackground = isShow;
         if (!isShow) {
             mContanierLl.setBackgroundColor(getContext().getResources().getColor(R.color.pop_bg_content));
+
             if (mCancelItemView != null) {
                 mCancelItemView.setBackgroundResource(R.drawable.pop_selector_cancel);
             }

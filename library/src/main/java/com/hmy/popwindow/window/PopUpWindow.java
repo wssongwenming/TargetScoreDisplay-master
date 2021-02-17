@@ -20,6 +20,8 @@ import com.hmy.popwindow.R;
 import com.hmy.popwindow.view.PopUpView;
 import com.hmy.popwindow.viewinterface.PopWindowInterface;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by HMY on 2016/9/10.
  */
@@ -42,16 +44,30 @@ public class PopUpWindow extends Dialog implements PopWindowInterface, DialogInt
 
     private View mCustomView;
 
-    public PopUpWindow(Activity activity, int titleResId, int messageResId, PopWindow popWindow) {
-        this(activity, titleResId == 0 ? null : activity.getString(titleResId), messageResId == 0 ? null : activity.getString(messageResId), popWindow);
+    public PopUpWindow(Activity activity, int titleResId, int messageResId, PopWindow popWindow,int totalRingNumber,int totalBulletNumber) {
+        this(activity, titleResId == 0 ? null : activity.getString(titleResId), messageResId == 0 ? null : activity.getString(messageResId), popWindow,totalRingNumber,totalBulletNumber);
     }
 
-    public PopUpWindow(Activity activity, CharSequence title, CharSequence message, PopWindow popWindow) {
+    public PopUpWindow(Activity activity, CharSequence title, CharSequence message, PopWindow popWindow,int totalRingNumber,int totalBulletNumber) {
         super(activity, R.style.PopWindowStyle);
         setContentView(R.layout.pop_up_window);
+
         getWindow().setWindowAnimations(R.style.PopWindowAnimation);
-//        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, 800);
-        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, 320);
+        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+//        getWindow().setLayout(550, 300);
+        // 修改打分总结背景的地方
+        double meanRingNumber=div(totalRingNumber,totalBulletNumber);
+        if(meanRingNumber>=9) {
+            getWindow().setBackgroundDrawableResource(R.drawable.gold);
+        }else if(meanRingNumber>=8)
+        {
+            getWindow().setBackgroundDrawableResource(R.drawable.silver);
+        }else if(meanRingNumber>=7)
+        {
+            getWindow().setBackgroundDrawableResource(R.drawable.copper);
+        }else {
+            getWindow().setBackgroundDrawableResource(R.drawable.iron);
+        }
         setOnShowListener(this);
         setCancelable(false);
         setCanceledOnTouchOutside(false);
@@ -223,5 +239,14 @@ public class PopUpWindow extends Dialog implements PopWindowInterface, DialogInt
     @Override
     public void onStartShow(PopWindowInterface popWindowInterface) {
         mPopWindow.onStartShow(popWindowInterface);
+    }
+    public  float div(int a,int b) {
+        // TODO 自动生成的方法存根
+
+        DecimalFormat df=new DecimalFormat("0.0");//设置保留位数
+
+//        return df.format((float)a/b);
+        return (float)a/b;
+
     }
 }

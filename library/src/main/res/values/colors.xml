@@ -3,8 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-
-    <color name="pop_bg_content">#9FFFFFFF</color>
+    <!--要把射击成绩报告改成底图模式，pop_bg_content设置成透明-->
+    <!--<color name="pop_bg_content">#9FFFFFFF</color>-->
+    <color name="pop_bg_content">#01000000</color>
     <color name="pop_bg_translucent">#01000000</color>
     <color name="pop_bg_translucent_half">#000000</color>
 

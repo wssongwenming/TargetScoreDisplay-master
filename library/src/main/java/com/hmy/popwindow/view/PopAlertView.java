@@ -42,7 +42,7 @@ public class PopAlertView extends LinearLayout implements PopViewInterface {
         mTitleTv.setGravity(Gravity.CENTER);
         mTitleTv.setBackgroundResource(android.R.color.transparent);
         mTitleTv.setClickable(true);
-        int padding = getResources().getDimensionPixelOffset(R.dimen.pop_item_padding);
+        int padding = getResources().getDimensionPixelOffset(R.dimen.dp_10);
         mTitleTv.setPadding(padding * 2, padding, padding * 2, padding);
         addView(mTitleTv, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
@@ -51,9 +51,9 @@ public class PopAlertView extends LinearLayout implements PopViewInterface {
 
     private void initTextAndMessage() {
         mTitleColor = getResources().getColor(R.color.pop_action_sheet_title);
-        mTitleTextSize = getResources().getDimensionPixelOffset(R.dimen.pop_action_sheet_text_size_title);
+        mTitleTextSize = getResources().getDimensionPixelOffset(R.dimen.sp_40);
         mMessageColor = getResources().getColor(R.color.pop_action_sheet_message);
-        mMessageTextSize = getResources().getDimensionPixelOffset(R.dimen.pop_action_sheet_text_size_message);
+        mMessageTextSize = getResources().getDimensionPixelOffset(R.dimen.sp_40);
     }
 
     @Override

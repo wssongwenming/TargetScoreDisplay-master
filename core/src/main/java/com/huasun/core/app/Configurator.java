@@ -1,7 +1,10 @@
 package com.huasun.core.app;
 
 import android.app.Activity;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.widget.RelativeLayout;
 
 import com.huasun.core.rabbitmq.MessageConsumer;
 import com.huasun.core.rabbitmq.MyMessageConsumer;
@@ -52,6 +55,40 @@ public class Configurator {
     public final Configurator withActivity(Activity activity)
     {
         LATTE_CONFIGS.put(ConfigKeys.ACTIVITY,activity);
+        return this;
+    }
+    public final Configurator withIsShooting(Boolean isShooting)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.ISSHOOTING,isShooting);
+        return this;
+    }
+    public final Configurator withConnectRabbit(Boolean connectRabbit)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.CONNECT_RABBIT,connectRabbit);
+        return this;
+    }
+
+    public final Configurator withResources(Resources resources)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.RESOURCES,resources);
+        return this;
+    }
+
+    public final Configurator withLaunch_RelativeLayout(RelativeLayout relativeLayout)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.LAUNCH_RELATIVELAYOUT,relativeLayout);
+        return this;
+    }
+
+    public final Configurator withUiHandler(Handler handler)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.UIHANDER,handler);
+        return this;
+    }
+
+    public final Configurator withDrawable(Drawable background)
+    {
+        LATTE_CONFIGS.put(ConfigKeys.DRAWBLE,background);
         return this;
     }
 

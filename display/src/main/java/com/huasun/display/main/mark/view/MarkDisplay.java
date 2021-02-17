@@ -103,10 +103,10 @@ public class MarkDisplay extends SurfaceView implements SurfaceHolder.Callback, 
             TypedValue.COMPLEX_UNIT_SP, 30, getResources().getDisplayMetrics());
 
     private float mMarkTextSize = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 20, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 15, getResources().getDisplayMetrics());
 
     private float mMarkRingRadius = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP, 7, getResources().getDisplayMetrics());
+            TypedValue.COMPLEX_UNIT_SP, 5, getResources().getDisplayMetrics());
 
     public MarkDisplay(Context context) {
         super(context);

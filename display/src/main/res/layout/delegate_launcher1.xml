@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/launcher_00">
+    android:background="@mipmap/launcher_disconnect_rabbitmq">
     <!--android:layout_alignParentStart紧贴父元素结束位置开始
        android:layout_alignParentEnd紧贴父元素结束位置结束
         android:layout_marginStart：如果在LTR布局模式下，该属性等同于android:layout_marginLeft。如果在RTL布局模式下，

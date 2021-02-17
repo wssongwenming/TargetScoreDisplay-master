@@ -65,8 +65,8 @@ public class WaitDelegate extends BottomItemDelegate {
 
     @Override
     public void onBindView(@Nullable Bundle savedInstanceState, View rootView) {
-        chronometer.setFormat("计时 %s");
-        chronometer.start();
+//        chronometer.setFormat("计时 %s");
+//        chronometer.start();
         //initTimer();
     }
     //判断是否显示滑动气动页
@@ -77,34 +77,6 @@ public class WaitDelegate extends BottomItemDelegate {
     private void checkSignIn(OnLauncherFinishTag onLauncherFinishTag){
         mILauncherListener.onLauncherFinish(onLauncherFinishTag);
     }
-/*    @Override
-    public void onTimer() {
-        getProxyActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if(mTvTimer!=null){
-                    if(mILauncherListener.getStatus()==2){
-                        mTvTimer.setText(MessageFormat.format("请稍候\n{0}s",mCount));
-                        mCount++;
-                    }else if(mILauncherListener.getStatus()==0){
-                        if(mTimer!=null){
-                            mTimer.cancel();
-                            mTimer=null;
-                            checkSignIn(OnLauncherFinishTag.SIGNIN_BY_PASS);
-                        }
-                    }else if(mILauncherListener.getStatus()==1){
-                        if(mTimer!=null){
-                            mTimer.cancel();
-                            mTimer=null;
-                            checkSignIn(OnLauncherFinishTag.SIGNIN_BY_FACE);
-                        }
-                    }
-                }
-            }
-        });
-    }*/
-
-
 
 }
 

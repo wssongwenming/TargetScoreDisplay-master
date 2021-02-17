@@ -9,16 +9,14 @@
         android:id="@+id/layout_contain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+        android:layout_gravity="center">
 
         <com.hmy.popwindow.view.PopUpView
             android:id="@+id/popUpView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="@dimen/pop_item_padding"
-            android:layout_marginLeft="@dimen/pop_item_padding"
-            android:layout_marginRight="@dimen/pop_item_padding" />
+
+/>
 
         <LinearLayout
             android:id="@+id/layout_bottom"

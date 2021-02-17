@@ -2,15 +2,19 @@ package com.huasun.targetscore.display;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
+import android.os.StrictMode;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
@@ -22,10 +26,11 @@ import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
 
 import com.huasun.core.rabbitmq.MessageConsumer;
-import com.huasun.core.rabbitmq.RabbitMQConsumer;
+
 import com.huasun.core.ui.launcher.ILauncherListener;
 import com.huasun.core.ui.launcher.OnLauncherFinishTag;
 import com.huasun.core.util.ActivityManager;
+import com.huasun.core.util.Config;
 import com.huasun.core.util.DataCleanManager;
 import com.huasun.core.util.SoundPoolUtil;
 import com.huasun.core.util.asyncplayer.AsyncPlayer;
@@ -40,6 +45,7 @@ import com.huasun.display.sign.SignInByFace.SignInByFaceRecDelegate;
 import com.huasun.display.sign.SignInByPassword.SignInByPassDelegate;
 
 import com.huasun.display.wait.WaitDelegate;
+import com.huasun.targetscore.rabbitmq.RabbitMQConsumer;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -58,13 +64,15 @@ import java.util.Map;
 
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener {
     DataHandler dataHandler = DataHandler.getInstance();
+
+    public boolean isShooting=false;
     //资源列表,用于播放声音
     private Map<String, Integer> map ;
     private List<Integer> zh ;
     private MarkDelegate markDelegate;
     //Activity是否已经收到了服务器端就绪的命令，如果Activity收到了该命令并根据传入的参数(0:密码登陆，1：脸部识别登陆,2:等候中)进入相应界面
     private RabbitMQConsumer mConsumer;
-    private String server = "192.168.1.3";
+    private String server = Config.serverIp;
     private String exchange_name = "server-to-display-exchange";
     private String exchange_type = "topic";
     private int port = 5672;
@@ -83,16 +91,38 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             actionBar.hide();
         }
         Latte.getConfigurator().withActivity(this);
+        dataHandler.setMainActivity(this);
+        Latte.getConfigurator().withIsShooting(false);
+        //????可能引发问题
+//        Latte.getConfigurator().withLaunch_RelativeLayout((RelativeLayout)findViewById(R.id.layout_launch));
+//        Latte.getConfigurator().withDrawable(this.getResources().getDrawable(R.drawable.background));
+
+//        Handler uiHandler=new Handler() {
+//            public void handleMessage(String msg) {
+//                Resources resources=getResources();;//获取本地资源
+//                RelativeLayout relativeLayout=findViewById(R.id.layout_launch);
+//                relativeLayout.setBackground(resources.getDrawable(R.drawable.background));
+//
+//            }
+//        };
+//        Latte.getConfigurator().withUiHandler(uiHandler);
+
+//        高版本不能在主线程中启动HTTP
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
         String mac = getMac(this);
         queueName = "server-to-display-queue-" + mac;
         routingKey = "server-to-display-routing-key-" + mac;
 
         //开始消息队列
 //        mConsumer = Latte.getConfiguration(ConfigKeys.MESSAGECONSUMER);
-        mConsumer=new RabbitMQConsumer(server,exchange_name,port,username,password,exchange_type,queueName,routingKey);
+        mConsumer=new RabbitMQConsumer(server,exchange_name,port,username,password,exchange_type,queueName,routingKey,this);
         new consumerconnect().execute();
 
-        mConsumer.setOnReceiveMessageHandler(new MessageConsumer.OnReceiveMessageHandler() {
+        mConsumer.setOnReceiveMessageHandler(new com.huasun.targetscore.rabbitmq.MessageConsumer.OnReceiveMessageHandler() {
             @TargetApi(Build.VERSION_CODES.O)
             @Override
             public void onReceiveMessage(byte[] text) {
@@ -113,22 +143,23 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                         //Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), "ok", Toast.LENGTH_LONG).show();
                         startWithPop(SignInByPassDelegate.newInstance(message));
                     } else if (dataType == DataType.SIGNINBYFACE.getCode()) {
+                        Latte.getConfigurator().withIsShooting(false);
                         startWithPop(SignInByFaceRecDelegate.newInstance(message));
                     } else if (dataType == DataType.STARTSHOOTING.getCode()) {//不会直接走，
+                        Latte.getConfigurator().withIsShooting(true);
                         startWithPop(MarkDelegate.newInstance(message));
                     } else if (dataType == DataType.MARK_DATA.getCode()) {
                         if (markDelegate != null) {
+
                             MarkDisplay markDisplay = markDelegate.getMarkDisplay();
                             if (markDisplay != null) {
                                 markDisplay.setMarkJson(message);
                                 markDelegate.mRefreshHandler.initData(message);
                                 if(message!=null&&!message.isEmpty()) {
                                     final JSONArray increasedRingNumbersOffsetArray = JSON.parseObject(message).getJSONArray("increasedRingNumbersAndOffset");
-                                    System.out.print("increadringnumber=" + increasedRingNumbersOffsetArray);
                                     int size=increasedRingNumbersOffsetArray.size();
                                     final List<String> ringNumberlists = new ArrayList<>() ;
                                     for (int i=0;i<size;i++){//increasedRingNumbersOffsetArray的数据是：ringnumber，offset，ringnumber，offset
-
                                         String ringnumber= String.valueOf((increasedRingNumbersOffsetArray.getInteger(i)));
                                         i++;
                                         String offset= String.valueOf((increasedRingNumbersOffsetArray.getString(i)));
@@ -196,6 +227,21 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         });
         init();
     }
+
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+////      Resources resources=this.getResources();;//获取本地资源
+////      RelativeLayout relativeLayout=findViewById(R.id.layout_launch);
+////      relativeLayout.setBackground(resources.getDrawable(R.drawable.background));
+//    }
+
+    public void refresh(){
+        Resources resources=this.getResources();;//获取本地资源
+        RelativeLayout relativeLayout=findViewById(R.id.layout_launch);
+        relativeLayout.setBackground(resources.getDrawable(R.drawable.background));
+    }
+
     private void init() {
         map = new HashMap<>() ;
         map.put("0", R.raw.zero);

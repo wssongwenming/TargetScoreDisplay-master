@@ -11,7 +11,6 @@ import com.hmy.popwindow.window.PopDownWindow;
 import com.hmy.popwindow.window.PopUpWindow;
 
 /**
- * Created by HMY on 2016/9/10.
  */
 public class PopWindow implements PopWindowInterface,
         PopWindowInterface.OnStartShowListener, PopWindowInterface.OnStartDismissListener {
@@ -19,8 +18,11 @@ public class PopWindow implements PopWindowInterface,
     private Activity mActivity;
 
     private CharSequence mTitleText;
+
     private CharSequence mMessageText;
     private PopWindowStyle mStyle = PopWindowStyle.PopUp;
+    private int mTotalBulletNumber;
+    private int mTotalRingNumber;
     private View mCustomView;
     private View mContentView;
 
@@ -33,26 +35,28 @@ public class PopWindow implements PopWindowInterface,
     private Animation mControlViewCloseAnimation;
     private boolean mIsShowControlViewAnim;
 
-    public PopWindow(Activity activity, int titleResId, int messageResId, PopWindowStyle style) {
-        this(activity, titleResId == 0 ? null : activity.getString(titleResId), messageResId == 0 ? null : activity.getString(messageResId), style);
+    public PopWindow(Activity activity, int titleResId, int messageResId, PopWindowStyle style,int totalRingNumber,int totalBulletNumber) {
+        this(activity, titleResId == 0 ? null : activity.getString(titleResId), messageResId == 0 ? null : activity.getString(messageResId), style,totalRingNumber,totalBulletNumber);
     }
 
-    public PopWindow(Activity activity, CharSequence title, CharSequence message, PopWindowStyle style) {
+    public PopWindow(Activity activity, CharSequence title, CharSequence message, PopWindowStyle style,int totalRingNumber,int totalBulletNumber) {
         mActivity = activity;
         setTitle(title);
         setMessage(message);
         setStyle(style);
-        initPopWindow(activity, title, message);
+        setTotalBulletNumber(totalBulletNumber);
+        setTotalRingNumber(totalRingNumber);
+        initPopWindow(activity, title, message,totalRingNumber,totalBulletNumber);
     }
 
     public PopWindow(Activity activity) {
         mActivity = activity;
-        initPopWindow(activity, null, null);
+        initPopWindow(activity, null, null,0,0);
     }
 
-    private void initPopWindow(Activity activity, CharSequence title, CharSequence message) {
+    private void initPopWindow(Activity activity, CharSequence title, CharSequence message,int totalRingNumber,int totalBulletNumber) {
         if (mStyle == PopWindowStyle.PopUp) {
-            mPopUpWindow = new PopUpWindow(activity, title, message, this);
+            mPopUpWindow = new PopUpWindow(activity, title, message, this,totalRingNumber,totalBulletNumber);
         } else if (mStyle == PopWindowStyle.PopDown) {
             mPopDownWindow = new PopDownWindow(activity, title, message, this);
         } else if (mStyle == PopWindowStyle.PopAlert) {
@@ -64,6 +68,12 @@ public class PopWindow implements PopWindowInterface,
         mTitleText = title;
     }
 
+    public void setTotalRingNumber(int totalRingNumber){
+        mTotalRingNumber=totalRingNumber;
+    }
+    public void setTotalBulletNumber(int bulletNumber){
+        mTotalBulletNumber=bulletNumber;
+    }
     public void setMessage(CharSequence message) {
         mMessageText = message;
     }
@@ -189,6 +199,8 @@ public class PopWindow implements PopWindowInterface,
 
         private Activity activity;
         private CharSequence title;
+        private int totalRingNumber;
+        private int totalBulletNumber;
         private CharSequence message;
         private PopWindowStyle style = PopWindowStyle.PopUp;
         private PopWindow popWindow;
@@ -206,7 +218,14 @@ public class PopWindow implements PopWindowInterface,
             this.title = title;
             return this;
         }
-
+        public Builder setTotalRingNumber(int ringNumber){
+            this.totalRingNumber=ringNumber;
+            return this;
+        }
+        public Builder setTotalBulletNumber(int bulletNumber){
+            this.totalBulletNumber=bulletNumber;
+            return this;
+        }
         public Builder setMessage(int messageResId) {
             this.message = activity.getString(messageResId);
             return this;
@@ -264,28 +283,23 @@ public class PopWindow implements PopWindowInterface,
 
         public PopWindow create() {
             if (popWindow == null) {
-                popWindow = new PopWindow(activity, title, message, style);
+                popWindow = new PopWindow(activity, title, message, style,totalRingNumber,totalBulletNumber);
 
             }
             return popWindow;
         }
-
         public PopWindow show(View view) {
             create();
             popWindow.show(view);
             return popWindow;
         }
-
         public PopWindow show() {
             return show(null);
         }
-
     }
-
     public void show() {
         show(null);
     }
-
     public void show(View view) {
         if (mPopUpWindow != null) {
             mPopUpWindow.show();
@@ -318,7 +332,6 @@ public class PopWindow implements PopWindowInterface,
         if (popItemAction.getTextResId() != 0) {
             popItemAction.setText(mActivity.getString(popItemAction.getTextResId()));
         }
-
         if (mStyle == PopWindowStyle.PopUp) {
             mPopUpWindow.addItemAction(popItemAction);
         } else if (mStyle == PopWindowStyle.PopDown) {
@@ -327,7 +340,6 @@ public class PopWindow implements PopWindowInterface,
             mPopAlertDialog.addItemAction(popItemAction);
         }
     }
-
     public enum PopWindowStyle {
         PopUp, PopDown, PopAlert
     }

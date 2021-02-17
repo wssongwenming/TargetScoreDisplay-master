@@ -17,7 +17,7 @@ public class PopLineView extends View {
 
     public PopLineView(Context context) {
         super(context);
-        setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelOffset(R.dimen.pop_line_height)));
+        setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDimensionPixelOffset(R.dimen.dp_1)));
         setBackgroundResource(R.color.pop_item_bg_pressed);
         setTag(TAG_LINE_VIEW);
     }

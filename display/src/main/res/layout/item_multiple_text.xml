@@ -3,9 +3,9 @@
     android:layout_width="match_parent"
 
     android:background="#ececec"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginBottom="2dp"
+    android:layout_marginLeft="@dimen/dp_10"
+    android:layout_marginRight="@dimen/dp_10"
+    android:layout_marginBottom="@dimen/dp_2"
 
     android:layout_height="wrap_content">
 
@@ -17,11 +17,11 @@
         <TextView
             android:id="@+id/tv_id"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
 
             android:textColor="@color/black"
             android:text="序号"
-            android:textSize="20sp"
+            android:textSize="@dimen/sp_20"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="left"
@@ -29,10 +29,10 @@
         <TextView
             android:id="@+id/tv_ring_number"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textColor="@color/Red"
             android:text="环数"
-            android:textSize="20sp"
+            android:textSize="@dimen/sp_20"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="left"
@@ -40,11 +40,11 @@
         <TextView
             android:id="@+id/tv_offset_direction"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_weight="3"
 
             android:textColor="@color/black"
             android:text="偏移方向"
-            android:textSize="20sp"
+            android:textSize="@dimen/sp_20"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="left"
@@ -54,10 +54,9 @@
             android:layout_gravity="center"
             android:gravity="left"
             android:layout_width="0dp"
-            android:layout_weight="2"
-
+            android:layout_weight="5"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="@dimen/sp_20"
             android:textStyle="bold"
             android:text="时间"
             android:layout_height="wrap_content" />

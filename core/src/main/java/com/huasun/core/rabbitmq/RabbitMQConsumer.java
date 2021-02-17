@@ -1,12 +1,24 @@
 package com.huasun.core.rabbitmq;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.util.Log;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.bumptech.glide.Glide;
+import com.huasun.core.R;
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
+import com.huasun.core.net.RestClient;
+import com.huasun.core.net.callback.ISuccess;
+import com.huasun.core.util.ToastUtil;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.BlockedListener;
@@ -48,6 +60,10 @@ public class RabbitMQConsumer {
     protected Connection mConnection;
     // connection to AMQP server,
     private  Connection s_connection = null;
+
+    //??????可能引发问题
+
+    private  Handler myHandler=new Handler();
 
     // AMQP server should consider messages acknowledged once delivered if _autoAck is true
     private boolean s_autoAck = false;
@@ -107,6 +123,8 @@ public class RabbitMQConsumer {
         executorService = Executors.newCachedThreadPool();
         disconnectHandler = new DisconnectHandler();
         blockedConnectionHandler = new BlockedConnectionHandler();
+        //????可能引发问题
+
 
 
     }
@@ -153,16 +171,95 @@ public class RabbitMQConsumer {
 //            throw new Exception("Failed to subscribe to event due to " + e.getMessage());
 //        }
           }catch (Exception e)
+          {
+                e.printStackTrace();
+                Latte.getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"APP未能正常连接消息队列，请检查设置后，并重新启动App!!!",Toast.LENGTH_LONG).show();
+                        Activity activity=((Activity)Latte.getConfiguration(ConfigKeys.ACTIVITY));
+                        Handler handler=Latte.getConfiguration(ConfigKeys.UIHANDER);
+                        String str_temp="要传给主线程的消息";
+                        Message message = Message.obtain();
+                        message.obj=str_temp;
+
+                        handler.sendMessage(message);
+
+                    }
+                });
+
+                //?????可能引发错误
+                myHandler.postDelayed(ConnectRabbitmqThread,1000);
+          }
+    }
+
+    Runnable ConnectRabbitmqThread=new Runnable() {
+        @Override
+        public void run() {
+            try {
+                mConnection = getConnection();
+                mModel = createChannel(mConnection);
+                mModel.basicQos(0, 10, false);
+                createExchange(mModel, amqpExchangeName);
+                mModel.queueDeclare(queueName, false, false, true, null);
+                mModel.queueBind(queueName, amqpExchangeName, routingKey);
+                // register a callback handler to receive the events that a subscriber subscribed to
+                mModel.basicConsume(queueName, s_autoAck, new DefaultConsumer(mModel) {
+                    @Override
+                    public void handleDelivery(String queueName, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+
+                        Thread thread = new Thread() {
+                            @Override
+                            public void run() {
+                                try {
+                                    mLastMessage = body;
+                                    Log.v("mLastMessage ", mLastMessage.toString());
+                                    mMessageHandler.post(mReturnMessage);
+                                    try {
+                                        mModel.basicAck(envelope.getDeliveryTag(), false);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } catch (Exception ie) {
+                                    ie.printStackTrace();
+                                }
+                            }
+
+                        };
+                        thread.start();
+                    }
+                });
+//        }catch (AlreadyClosedException closedException) {
+//            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", closedException);
+//        } catch (ConnectException connectException) {
+//            s_logger.warn("Connection to AMQP service is lost. Subscription:" + queueName + " will be active after reconnection", connectException);
+//        } catch (Exception e) {
+//            throw new Exception("Failed to subscribe to event due to " + e.getMessage());
+//        }
+            }catch (Exception e)
             {
                 e.printStackTrace();
                 Latte.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY),"APP未能正常连接消息队列，请检查设置后，并重新启动App!!!",Toast.LENGTH_LONG).show();
+                        Activity activity=((Activity)Latte.getConfiguration(ConfigKeys.ACTIVITY));
+                        Handler handler=Latte.getConfiguration(ConfigKeys.UIHANDER);
+                        String str_temp="要传给主线程的消息";
+                        Message message = Message.obtain();
+                        message.obj=str_temp;
+
+                        handler.sendMessage(message);
                     }
                 });
+                myHandler.postDelayed(ConnectRabbitmqThread,1000);
             }
-    }
+
+        }
+    };
+
+
+
 
     private synchronized Connection getConnection() throws Exception {
         if (s_connection == null) {

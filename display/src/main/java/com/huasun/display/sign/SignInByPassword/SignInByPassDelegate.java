@@ -20,6 +20,7 @@ import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
 import com.huasun.core.net.RestClient;
 import com.huasun.core.net.callback.ISuccess;
+import com.huasun.core.util.Config;
 import com.huasun.core.util.timer.ITimerListener;
 import com.huasun.display.R;
 import com.huasun.display.R2;
@@ -56,6 +57,7 @@ public class SignInByPassDelegate extends BottomItemDelegate {
             RestClient.builder()
                     //.url("http://192.168.1.3:8081/Web01_exec/UserLogin")
                     .url("http://192.168.1.3:8080/sys/trainee/login")
+                    //.url(Config.loginIp)
                     .params("id",mId.getText().toString())
                     .params("password",mPassword.getText().toString())
                     .success(new ISuccess() {
@@ -90,6 +92,8 @@ public class SignInByPassDelegate extends BottomItemDelegate {
                 final String department = data.getString("department");
                 final String password = data.getString("password");//登陆者的密码，一般为空，有时不需输入时可以输入默认的密码
                 final String photopath=ServerConfig.API_SERVER+data.getString("photopath");//登陆者的图片路径
+
+                System.out.print("path======="+photopath);
                 mId.setText(id+"");
                 mName.setText(name);
                 mDepartment.setText(department);
@@ -135,12 +139,12 @@ public class SignInByPassDelegate extends BottomItemDelegate {
         final String department=mDepartment.getText().toString();
         final String password=mPassword.getText().toString();
         boolean isPass=true;
-        if(id.isEmpty()){
-            mId.setError("请输入编码");
-            isPass=false;
-        }else {
-            mId.setError(null);
-        }
+//        if(id.isEmpty()){
+//            mId.setError("请输入编码");
+//            isPass=false;
+//        }else {
+//            mId.setError(null);
+//        }
         /*if(name.isEmpty()){
             mName.setError("请输入姓名");
             isPass=false;
@@ -153,12 +157,12 @@ public class SignInByPassDelegate extends BottomItemDelegate {
         }else {
             mDepartment.setError(null);
         }*/
-        if(password.isEmpty()||password.length()<6){
-            mPassword.setError("请填写至少6位数密码");
-            isPass=false;
-        }else{
-            mPassword.setError(null);
-        }
+//        if(password.isEmpty()||password.length()<6){
+//            mPassword.setError("请填写至少6位数密码");
+//            isPass=false;
+//        }else{
+//            mPassword.setError(null);
+//        }
         return isPass;
     }
 

@@ -2,6 +2,7 @@ package com.huasun.display.main.mark;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.hmy.popwindow.PopWindow;
 import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
+import com.huasun.core.util.Config;
 import com.huasun.display.R;
 import com.huasun.display.R2;
 import com.huasun.display.entity.MessagetoServer;
@@ -57,13 +60,13 @@ import android.widget.PopupWindow;
  * Description:
  */
 public class MarkDelegate extends BottomItemDelegate {
-    private String server="192.168.1.3";
+    private String server= Config.serverIp;
     private int port=5672;
     private String username="client";
     private String password="client";
     private String exchangeName="display-to-server-exchange";
     private String routingKey="display-to-server-routing-key";
-
+    private String gun;
     private static String COMMAND="COMMAND";
     private ArrayList<MultipleItemEntity> medicineHistoryList=new ArrayList<>();
     int llcPersonDataHeight=0;
@@ -86,10 +89,10 @@ public class MarkDelegate extends BottomItemDelegate {
     SwipeRefreshLayout mRefreshLayout=null;
     @BindView(R2.id.edit_name)
     EditText mName=null;
-    @BindView(R2.id.edit_department)
-    EditText mDepartment=null;
-    @BindView(R2.id.edit_gun)
-    EditText mGun=null;
+//    @BindView(R2.id.edit_department)
+//    EditText mDepartment=null;
+//    @BindView(R2.id.edit_gun)
+//    EditText mGun=null;
     @BindView(R2.id.edit_bullet)
     EditText mBullet=null;
     @BindView(R2.id.edit_target_number)
@@ -104,11 +107,10 @@ public class MarkDelegate extends BottomItemDelegate {
 //    TextView mTime=null;
     @OnClick(R2.id.btn_finish_shooting)
     void onClickSignIn(){
-        String gun=mGun.getText().toString();
+
         int bulletCount=Integer.parseInt(mBullet.getText().toString());//获得子弹数目
         String userName=mName.getText().toString();
         final View customView = View.inflate((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), R.layout.end_shooting_summary, null);//获得弹出框里要放的view
-
         AppCompatTextView user_name_textView=customView.findViewById(R.id.tv_user_name);
         AppCompatTextView shooting_info_textView=customView.findViewById(R.id.tv_shooting_info);
         AppCompatTextView shooting_score_textView=customView.findViewById(R.id.tv_shooting_score);
@@ -123,19 +125,36 @@ public class MarkDelegate extends BottomItemDelegate {
                 ringSum = (int) (ringSum + Math.floor(RINGSUM));
             }
         }
-        user_name_textView.setText(userName+"：");
+        user_name_textView.setText(" "+userName+"：");
         shooting_info_textView.setText(Html.fromHtml("<font color=\'#000000\'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您本次"+gun+"射击子弹</font><font color=\'#FF3B30\'>"+bulletCount+"</font>发，成绩:<font color=\'#FF3B30\'>"+ringSum+"</font>环"));
 //        shooting_info_textView.setText("            您本次"+gun+"射击子弹"+bulletCount+"发，"+"成绩:"+ringSum+"环。");
 //      shooting_score_textView.setText("总成绩："+ringSum+"环");
         PopWindow popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
                 .setStyle(PopWindow.PopWindowStyle.PopUp)
                 .setTitle("射击成绩报告")
+                .setTotalRingNumber(ringSum)
+                .setTotalBulletNumber(bulletCount)
                 .addContentView(customView)
                 .addItemAction(new PopItemAction(Html.fromHtml("<font color=\'#000000\'><b>确定</b></font>"), PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
                     @Override
                     public void onClick() {
                         new send().execute();
-                        startWithPop(new LauncherDelegate());
+                        start(new LauncherDelegate(),1);
+                        Latte.getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Resources resources=getActivity().getResources();;//获取本地资源
+                                RelativeLayout relativeLayout=getActivity().findViewById(R.id.layout_launch);
+                                Boolean connect_to_rabbit=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
+                                if(connect_to_rabbit) {
+                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                                }else {
+                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
+                                }
+
+                            }
+                        });
+                        //startWithPop(new LauncherDelegate());
                         //Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
                     }
                 }))
@@ -173,6 +192,7 @@ public class MarkDelegate extends BottomItemDelegate {
         initRefreshLayout();
         initRecyclerView();
         initBasicData(command);
+        mName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         //mRefreshHandler.injectDataIntoRecy("index");
     }
     public void initMarkData(String markJson)
@@ -192,22 +212,23 @@ public class MarkDelegate extends BottomItemDelegate {
             }
         });
         mName.setInputType(InputType.TYPE_NULL);
-        mDepartment.setText(commandJson.getString("department"));
-        mDepartment.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                return true;
-            }
-        });
-        mDepartment.setInputType(InputType.TYPE_NULL);
-        mGun.setText(commandJson.getString("shooting_gun"));
-        mGun.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                return true;
-            }
-        });
-        mGun.setInputType(InputType.TYPE_NULL);
+//        mDepartment.setText(commandJson.getString("department"));
+//        mDepartment.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                return true;
+//            }
+//        });
+//        mDepartment.setInputType(InputType.TYPE_NULL);
+//        mGun.setText(commandJson.getString("shooting_gun"));
+//        mGun.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                return true;
+//            }
+//        });
+//        mGun.setInputType(InputType.TYPE_NULL);
+        gun=commandJson.getString("shooting_gun");
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
         mBullet.setOnKeyListener(new View.OnKeyListener() {
             @Override

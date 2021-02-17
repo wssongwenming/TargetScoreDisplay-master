@@ -3,8 +3,8 @@
     android:id="@+id/layout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/pop_item_padding"
-    android:layout_marginRight="@dimen/pop_item_padding"
+    android:layout_marginLeft="@dimen/dp_10"
+    android:layout_marginRight="@dimen/dp_10"
     android:background="@color/pop_bg_translucent">
 
     <FrameLayout
