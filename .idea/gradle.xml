@@ -14,6 +14,8 @@
             <option value="$PROJECT_DIR$/display" />
             <option value="$PROJECT_DIR$/library" />
             <option value="$PROJECT_DIR$/main" />
+            <option value="$PROJECT_DIR$/tableLayout" />
+            <option value="$PROJECT_DIR$/tableview" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

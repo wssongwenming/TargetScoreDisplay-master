@@ -432,7 +432,8 @@ public class RabbitMQConsumer {
         factory.setPassword(password);
         factory.setHost(amqpHost);
         factory.setPort(port);
-        factory.setRequestedHeartbeat(3);
+        //
+        factory.setRequestedHeartbeat(1);
 
         Connection connection = factory.newConnection();
         connection.addShutdownListener(disconnectHandler);

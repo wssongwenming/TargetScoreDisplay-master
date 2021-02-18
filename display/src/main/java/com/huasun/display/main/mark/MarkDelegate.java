@@ -44,14 +44,19 @@ import com.huasun.display.refresh.RefreshHandler;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.smartown.tableview.library.TableView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import win.smartown.android.library.tableLayout.TableAdapter;
+import win.smartown.android.library.tableLayout.TableLayout;
+
 import android.widget.PopupWindow;
 
 /**
@@ -60,13 +65,31 @@ import android.widget.PopupWindow;
  * Description:
  */
 public class MarkDelegate extends BottomItemDelegate {
+
+    private PopWindow popWindow;
+    private TableView tableView;
+    private Button btn_ok;
     private String server= Config.serverIp;
     private int port=5672;
     private String username="client";
     private String password="client";
     private String exchangeName="display-to-server-exchange";
     private String routingKey="display-to-server-routing-key";
-    private String gun;
+    private String name;//姓名
+    private String gun;//枪械种类
+    private String shootingPose;//射击姿势
+    private String shootingDistance;//射击距离
+    private int countof10=0;//十环数目
+    private int countof9=0;
+    private int countof8=0;
+    private int countof7=0;
+    private int countof6=0;
+    private int countof5=0;
+    private int countofMiss=0;//脱靶数目
+
+    private int bulletNumber;
+    private double totalRingNumber;
+
     private static String COMMAND="COMMAND";
     private ArrayList<MultipleItemEntity> medicineHistoryList=new ArrayList<>();
     int llcPersonDataHeight=0;
@@ -103,37 +126,75 @@ public class MarkDelegate extends BottomItemDelegate {
 
     @BindView(R2.id.edit_group_number)
     EditText mGroupNumber=null;
+
 //    @BindView(R2.id.tv_time)
 //    TextView mTime=null;
     @OnClick(R2.id.btn_finish_shooting)
-    void onClickSignIn(){
+    void onFinishShooting(){
 
-        int bulletCount=Integer.parseInt(mBullet.getText().toString());//获得子弹数目
+        //int bulletCount=commandJson.getInteger("bullet_count");;//获得子弹数目
         String userName=mName.getText().toString();
-        final View customView = View.inflate((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), R.layout.end_shooting_summary, null);//获得弹出框里要放的view
-        AppCompatTextView user_name_textView=customView.findViewById(R.id.tv_user_name);
-        AppCompatTextView shooting_info_textView=customView.findViewById(R.id.tv_shooting_info);
-        AppCompatTextView shooting_score_textView=customView.findViewById(R.id.tv_shooting_score);
+        final View customView = View.inflate((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), R.layout.end_shoot, null);//获得弹出框里要放的view
+
+        TextView mName=(TextView) customView.findViewById(R.id.tv_name);
+        TextView mGun=(TextView)customView.findViewById(R.id.tv_gun_type);
+        TextView mShootDistance=(TextView)customView.findViewById(R.id.tv_shoot_distance);
+        TextView mShootPose=(TextView)customView.findViewById(R.id.tv_shoot_pose);
+        TextView mBulletCount=(TextView)customView.findViewById(R.id.tv_bullet_count);
+
+
+        tableView = (TableView) customView.findViewById(R.id.table);
+        btn_ok=(Button)customView.findViewById(R.id.btn_ok);
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popWindow.dismiss();
+                new send().execute();
+                start(new LauncherDelegate(),1);
+                Latte.getHandler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Resources resources=getActivity().getResources();;//获取本地资源
+                        RelativeLayout relativeLayout=getActivity().findViewById(R.id.layout_launch);
+                        Boolean connect_to_rabbit=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
+                        if(connect_to_rabbit) {
+                            relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                        }else {
+                            relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
+                        }
+                    }
+                });
+            }
+        });
+        tableView.clearTableContents()
+                .setHeader("10环", "9环", "8环", "7环", "6环", "5环", "脱靶")
+                .addContent("1", "2", "5", "2", "5", "2", "5")
+                .refreshTable();
+
+
         MultipleRecyclerAdapter multipleRecyclerAdapter= (MultipleRecyclerAdapter)mRecyclerView.getAdapter();
         int ringSum= 0;
         if(multipleRecyclerAdapter!=null) {
             List<MultipleItemEntity> entityList = multipleRecyclerAdapter.getData();
             int count = entityList.size();
             for (int i = 1; i < count; i++) {
-                String RINGSUM_STR=entityList.get(i).getField(MultipleFields.RINGNUMBER).toString();
-                double RINGSUM=Double.parseDouble(RINGSUM_STR);
-                ringSum = (int) (ringSum + Math.floor(RINGSUM));
+                String RINGNUMBER_STR=entityList.get(i).getField(MultipleFields.RINGNUMBER).toString();
+                double RINGNUMBER=Double.parseDouble(RINGNUMBER_STR);
+
+                ringSum = (int) (ringSum + Math.floor(RINGNUMBER));
             }
         }
-        user_name_textView.setText(" "+userName+"：");
-        shooting_info_textView.setText(Html.fromHtml("<font color=\'#000000\'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;您本次"+gun+"射击子弹</font><font color=\'#FF3B30\'>"+bulletCount+"</font>发，成绩:<font color=\'#FF3B30\'>"+ringSum+"</font>环"));
-//        shooting_info_textView.setText("            您本次"+gun+"射击子弹"+bulletCount+"发，"+"成绩:"+ringSum+"环。");
-//      shooting_score_textView.setText("总成绩："+ringSum+"环");
-        PopWindow popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
+        mName.setText(name);
+        mGun.setText("枪械种类:"+gun);
+        mShootPose.setText("射击姿势:"+shootingPose);
+        mShootDistance.setText("射击距离"+shootingDistance);
+        mBulletCount.setText("子弹数量:"+bulletNumber);
+
+        popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
                 .setStyle(PopWindow.PopWindowStyle.PopUp)
-                .setTitle("射击成绩报告")
+               // .setTitle("射击成绩报告")
                 .setTotalRingNumber(ringSum)
-                .setTotalBulletNumber(bulletCount)
+                .setTotalBulletNumber(bulletNumber)
                 .addContentView(customView)
                 .addItemAction(new PopItemAction(Html.fromHtml("<font color=\'#000000\'><b>确定</b></font>"), PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
                     @Override
@@ -151,7 +212,6 @@ public class MarkDelegate extends BottomItemDelegate {
                                 }else {
                                     relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
                                 }
-
                             }
                         });
                         //startWithPop(new LauncherDelegate());
@@ -229,6 +289,11 @@ public class MarkDelegate extends BottomItemDelegate {
 //        });
 //        mGun.setInputType(InputType.TYPE_NULL);
         gun=commandJson.getString("shooting_gun");
+        name=commandJson.getString("name");
+        shootingPose=commandJson.getString("shooting_pose");
+        shootingDistance=commandJson.getString("shooting_distance");
+        bulletNumber=commandJson.getInteger("bullet_count");
+
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
         mBullet.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -349,4 +414,24 @@ public class MarkDelegate extends BottomItemDelegate {
         super.onDestroyView();
     }
     //          2020.10.30添加可能引发错误
+
+
+    //将第一行作为标题
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(popWindow!=null){
+            popWindow.dismiss();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(popWindow!=null){
+            popWindow.dismiss();
+        }
+    }
 }

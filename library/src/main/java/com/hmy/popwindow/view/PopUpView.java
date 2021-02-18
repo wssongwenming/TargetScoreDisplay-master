@@ -50,7 +50,7 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
         mContanierLl.setBackgroundResource(R.drawable.pop_shape_bg);
         mContanierLl.addView(mTitleTv, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        addView(mContanierLl, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+       addView(mContanierLl, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         initTextAndMessage();
     }
@@ -112,13 +112,14 @@ public class PopUpView extends LinearLayout implements PopViewInterface {
                 }
                 MarginLayoutParams params = (MarginLayoutParams) mCancelItemView.getLayoutParams();
                 params.topMargin = getResources().getDimensionPixelOffset(R.dimen.dp_5);
-                addView(popItemView);
+                //去掉了内置的退出按钮，改为在layout.xml中
+//                addView(popItemView);
             } else {
                 throw new RuntimeException("PopWindow 只能添加一个取消操作");
             }
         } else {
             addLineView();
-            mContanierLl.addView(popItemView);
+//            mContanierLl.addView(popItemView);
         }
     }
 

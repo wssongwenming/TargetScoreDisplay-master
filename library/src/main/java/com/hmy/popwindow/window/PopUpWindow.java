@@ -57,17 +57,9 @@ public class PopUpWindow extends Dialog implements PopWindowInterface, DialogInt
 //        getWindow().setLayout(550, 300);
         // 修改打分总结背景的地方
         double meanRingNumber=div(totalRingNumber,totalBulletNumber);
-        if(meanRingNumber>=9) {
-            getWindow().setBackgroundDrawableResource(R.drawable.gold);
-        }else if(meanRingNumber>=8)
-        {
-            getWindow().setBackgroundDrawableResource(R.drawable.silver);
-        }else if(meanRingNumber>=7)
-        {
-            getWindow().setBackgroundDrawableResource(R.drawable.copper);
-        }else {
-            getWindow().setBackgroundDrawableResource(R.drawable.iron);
-        }
+
+        getWindow().setBackgroundDrawableResource(R.drawable.silver);
+
         setOnShowListener(this);
         setCancelable(false);
         setCanceledOnTouchOutside(false);

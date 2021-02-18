@@ -291,7 +291,7 @@
                                 android:layout_gravity="center"
                                 android:layout_width="wrap_content"
                                 android:textColor="@color/white"
-                                android:background="#83210d"
+                                android:background="@drawable/btn_bg_red"
                                 android:layout_height="wrap_content" />
                         </android.support.v7.widget.LinearLayoutCompat>
 

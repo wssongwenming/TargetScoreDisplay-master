@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:textStyle="bold"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+
+
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_marginLeft="@dimen/dp_148"
+        android:layout_marginRight="@dimen/dp_148"
+        android:layout_marginTop="@dimen/dp_100"
+
+        android:layout_height="match_parent">
+    <TextView
+        android:text="姓名"
+        android:id="@+id/tv_name"
+
+        android:textStyle="bold"
+        android:textColor="#98f4ef"
+        android:textSize="@dimen/sp_48"
+       android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/dp_5"
+        android:layout_marginBottom="@dimen/dp_5"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="枪械种类:"
+            android:layout_gravity="left"
+            android:id="@+id/tv_gun_type"
+            android:textStyle="bold"
+            android:textColor="#d4f6e3"
+            android:textSize="@dimen/sp_40"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:text="射击距离:"
+            android:id="@+id/tv_shoot_distance"
+            android:gravity="right"
+            android:textStyle="bold"
+
+            android:textColor="#d4f6e3"
+            android:textSize="@dimen/sp_40"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </android.support.v7.widget.LinearLayoutCompat>
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/dp_5"
+        android:layout_marginBottom="@dimen/dp_5"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="射击姿势:"
+            android:layout_gravity="left"
+            android:id="@+id/tv_shoot_pose"
+            android:textStyle="bold"
+            android:textColor="#d4f6e3"
+            android:textSize="@dimen/sp_40"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:text="子弹数量:"
+            android:id="@+id/tv_bullet_count"
+            android:gravity="right"
+            android:textStyle="bold"
+
+            android:textColor="#d4f6e3"
+            android:textSize="@dimen/sp_40"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </android.support.v7.widget.LinearLayoutCompat>
+
+    <com.smartown.tableview.library.TableView
+        android:id="@+id/table"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+
+        android:textStyle="bold"
+        app:dividerColor="#e1e1e1"
+        app:dividerWidth="2px"
+        app:headerColor="#00ffffff"
+        app:headerTextColor="#b4b7b7"
+        app:headerTextSize="@dimen/sp_36"
+        app:textSize="@dimen/sp_36"
+        app:rowHeight="@dimen/dp_50"
+        app:textColor="#999999"
+        app:unitColumnWidth="0dp" />
+        <android.support.v7.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/dp_20"
+            android:layout_height="wrap_content">
+            <TextView
+                android:gravity="center"
+                android:text="总成绩：80环"
+                android:id="@+id/tv_total_ringnumber"
+                android:textStyle="bold"
+                android:textColor="#98f4ef"
+                android:textSize="@dimen/sp_48"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </android.support.v7.widget.LinearLayoutCompat>
+        <android.support.v7.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/dp_40"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_ok"
+                android:background="@drawable/btn_bg_red"
+                android:layout_width="wrap_content"
+                android:textSize="@dimen/sp_48"
+                android:textStyle="bold"
+                android:minHeight="0dp"
+                android:text="退  出"
+                android:textColor="#ffffff"
+                android:paddingLeft="@dimen/dp_80"
+                android:paddingRight="@dimen/dp_80"
+                android:paddingTop="@dimen/dp_10"
+                android:paddingBottom="@dimen/dp_10"
+                android:layout_height="wrap_content" />
+        </android.support.v7.widget.LinearLayoutCompat>
+    </android.support.v7.widget.LinearLayoutCompat>
+
+</android.support.v7.widget.LinearLayoutCompat>
