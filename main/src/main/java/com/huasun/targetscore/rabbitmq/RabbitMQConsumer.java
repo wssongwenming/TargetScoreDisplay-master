@@ -3,6 +3,7 @@ package com.huasun.targetscore.rabbitmq;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.Log;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -159,9 +160,12 @@ public class RabbitMQConsumer {
             Latte.getHandler().post(new Runnable() {
                 @Override
                 public void run() {
-                    Resources resources=activity.getResources();;//获取本地资源
-                    RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
-                    relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                      Resources resources=activity.getResources();;//获取本地资源
+//                    RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
+//                    relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                    AppCompatImageView imageView=activity.findViewById(R.id.tv_ring_icon);
+                    imageView.setImageResource(R.drawable.ring_connect);
+                    //imageView.setBackground(resources.getDrawable(R.drawable.ring_connect));
 
                 }
             });
@@ -226,13 +230,13 @@ public class RabbitMQConsumer {
                         thread.start();
                     }
                 });
+                //可以去掉类似更新，在activity中启动了专门的线程用于更新ｒａｂｂｉｔ连接图标，可以不用单独更新连接图标
                 Latte.getConfigurator().withConnectRabbit(true);
                 Latte.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
-                        Resources resources=activity.getResources();;//获取本地资源
-                        RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
-                        relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                        AppCompatImageView imageView=activity.findViewById(R.id.tv_ring_icon);
+                        imageView.setImageResource(R.drawable.ring_connect);
 
                     }
                 });
@@ -282,16 +286,23 @@ public class RabbitMQConsumer {
             if (!shutdownSignalException.isInitiatedByApplication()) {
 
                 abortConnection(); // disconnected to AMQP server, so abort the connection and channels
-                //s_logger.warn("Connection has been shutdown by AMQP server. Attempting to reconnect.");
                 //rabbitmqdu断开后切换到启动界面
                 Latte.getConfigurator().withConnectRabbit(false);
-                activity.start(new LauncherDelegate(),1);
+//                activity.start(new LauncherDelegate(),1);
+//                Latte.getHandler().post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Resources resources=activity.getResources();;//获取本地资源
+//                        RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
+//                        relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
+//
+//                    }
+//                });
                 Latte.getHandler().post(new Runnable() {
                     @Override
                     public void run() {
-                        Resources resources=activity.getResources();;//获取本地资源
-                        RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
-                        relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
+                        AppCompatImageView imageView=activity.findViewById(R.id.tv_ring_icon);
+                        imageView.setImageResource(R.drawable.ring_disconnect);
 
                     }
                 });
@@ -309,6 +320,7 @@ public class RabbitMQConsumer {
         public void handleBlocked(String reason) throws IOException {
 //            s_logger.error("rabbitmq connection is blocked with reason: " + reason);
             closeConnection();
+            Latte.getConfigurator().withConnectRabbit(false);
             try {
                 throw new Exception("unblocking the parent thread as publishing to rabbitmq server is blocked with reason: " + reason);
             } catch (Exception e) {
@@ -412,9 +424,11 @@ public class RabbitMQConsumer {
                     Latte.getHandler().post(new Runnable() {
                         @Override
                         public void run() {
-                            Resources resources=activity.getResources();;//获取本地资源
-                            RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
-                            relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+//                            Resources resources=activity.getResources();;//获取本地资源
+//                            RelativeLayout relativeLayout=activity.findViewById(R.id.layout_launch);
+//                            relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+                            AppCompatImageView imageView=activity.findViewById(R.id.tv_ring_icon);
+                            imageView.setImageResource(R.drawable.ring_connect);
 
                         }
                     });

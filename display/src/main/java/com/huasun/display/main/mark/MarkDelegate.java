@@ -59,6 +59,8 @@ import win.smartown.android.library.tableLayout.TableLayout;
 
 import android.widget.PopupWindow;
 
+import org.w3c.dom.Text;
+
 /**
  * author:songwenming
  * Date:2019/9/26
@@ -85,7 +87,9 @@ public class MarkDelegate extends BottomItemDelegate {
     private int countof7=0;
     private int countof6=0;
     private int countof5=0;
+    private int[] ringNumbers=new int[6];
     private int countofMiss=0;//脱靶数目
+    private int countofNotMisss=0;
 
     private int bulletNumber;
     private double totalRingNumber;
@@ -141,7 +145,7 @@ public class MarkDelegate extends BottomItemDelegate {
         TextView mShootDistance=(TextView)customView.findViewById(R.id.tv_shoot_distance);
         TextView mShootPose=(TextView)customView.findViewById(R.id.tv_shoot_pose);
         TextView mBulletCount=(TextView)customView.findViewById(R.id.tv_bullet_count);
-
+        TextView mTotalRingNumber=(TextView)customView.findViewById(R.id.tv_total_ringnumber);
 
         tableView = (TableView) customView.findViewById(R.id.table);
         btn_ok=(Button)customView.findViewById(R.id.btn_ok);
@@ -150,27 +154,9 @@ public class MarkDelegate extends BottomItemDelegate {
             public void onClick(View v) {
                 popWindow.dismiss();
                 new send().execute();
-                start(new LauncherDelegate(),1);
-                Latte.getHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Resources resources=getActivity().getResources();;//获取本地资源
-                        RelativeLayout relativeLayout=getActivity().findViewById(R.id.layout_launch);
-                        Boolean connect_to_rabbit=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
-                        if(connect_to_rabbit) {
-                            relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
-                        }else {
-                            relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
-                        }
-                    }
-                });
+                startWithPop(new LauncherDelegate());
             }
         });
-        tableView.clearTableContents()
-                .setHeader("10环", "9环", "8环", "7环", "6环", "5环", "脱靶")
-                .addContent("1", "2", "5", "2", "5", "2", "5")
-                .refreshTable();
-
 
         MultipleRecyclerAdapter multipleRecyclerAdapter= (MultipleRecyclerAdapter)mRecyclerView.getAdapter();
         int ringSum= 0;
@@ -180,15 +166,26 @@ public class MarkDelegate extends BottomItemDelegate {
             for (int i = 1; i < count; i++) {
                 String RINGNUMBER_STR=entityList.get(i).getField(MultipleFields.RINGNUMBER).toString();
                 double RINGNUMBER=Double.parseDouble(RINGNUMBER_STR);
-
-                ringSum = (int) (ringSum + Math.floor(RINGNUMBER));
+                int ringNumber=(int)RINGNUMBER;
+                if(ringNumber>=5) {
+                    ringNumbers[ringNumber - 5] += 1;
+                    ringSum=ringSum+ringNumber;
+                    countofNotMisss+=1;
+                }
+//                ringSum = (int) (ringSum + Math.floor(RINGNUMBER));
             }
+
         }
         mName.setText(name);
         mGun.setText("枪械种类:"+gun);
         mShootPose.setText("射击姿势:"+shootingPose);
         mShootDistance.setText("射击距离"+shootingDistance);
         mBulletCount.setText("子弹数量:"+bulletNumber);
+        mTotalRingNumber.setText("总成绩:"+ringSum);
+        tableView.clearTableContents()
+                .setHeader("10环", "9环", "8环", "7环", "6环", "5环", "脱靶")
+                .addContent(ringNumbers[5]+"", ringNumbers[4]+"", ringNumbers[3]+"", ringNumbers[2]+"", ringNumbers[1]+"", ringNumbers[0]+"", bulletNumber-countofNotMisss+"")
+                .refreshTable();
 
         popWindow = new PopWindow.Builder((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY))
                 .setStyle(PopWindow.PopWindowStyle.PopUp)
@@ -196,28 +193,28 @@ public class MarkDelegate extends BottomItemDelegate {
                 .setTotalRingNumber(ringSum)
                 .setTotalBulletNumber(bulletNumber)
                 .addContentView(customView)
-                .addItemAction(new PopItemAction(Html.fromHtml("<font color=\'#000000\'><b>确定</b></font>"), PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
-                    @Override
-                    public void onClick() {
-                        new send().execute();
-                        start(new LauncherDelegate(),1);
-                        Latte.getHandler().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Resources resources=getActivity().getResources();;//获取本地资源
-                                RelativeLayout relativeLayout=getActivity().findViewById(R.id.layout_launch);
-                                Boolean connect_to_rabbit=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
-                                if(connect_to_rabbit) {
-                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
-                                }else {
-                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
-                                }
-                            }
-                        });
-                        //startWithPop(new LauncherDelegate());
-                        //Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
-                    }
-                }))
+//                .addItemAction(new PopItemAction(Html.fromHtml("<font color=\'#000000\'><b>确定</b></font>"), PopItemAction.PopItemStyle.Normal, new PopItemAction.OnClickListener() {
+//                    @Override
+//                    public void onClick() {
+//                        new send().execute();
+//                        start(new LauncherDelegate(),1);
+//                        Latte.getHandler().post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Resources resources=getActivity().getResources();;//获取本地资源
+//                                RelativeLayout relativeLayout=getActivity().findViewById(R.id.layout_launch);
+//                                Boolean connect_to_rabbit=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
+//                                if(connect_to_rabbit) {
+//                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.connect_rab));
+//                                }else {
+//                                    relativeLayout.setBackground(resources.getDrawable(R.drawable.disconnect_rab));
+//                                }
+//                            }
+//                        });
+//                        //startWithPop(new LauncherDelegate());
+//                        //Toast.makeText((Activity) Latte.getConfiguration(ConfigKeys.ACTIVITY), "完成打靶", Toast.LENGTH_SHORT).show();
+//                    }
+//                }))
                 .create();
         popWindow.show();
     }
@@ -432,6 +429,7 @@ public class MarkDelegate extends BottomItemDelegate {
         super.onStop();
         if(popWindow!=null){
             popWindow.dismiss();
+
         }
     }
 }

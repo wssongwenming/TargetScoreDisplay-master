@@ -3,7 +3,7 @@
     android:id="@+id/layout_launch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/launcher_disconnect_rabbitmq">
+    android:background="@mipmap/launcher">
     <!--android:layout_alignParentStart紧贴父元素结束位置开始
        android:layout_alignParentEnd紧贴父元素结束位置结束
         android:layout_marginStart：如果在LTR布局模式下，该属性等同于android:layout_marginLeft。如果在RTL布局模式下，
@@ -36,5 +36,12 @@
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/tv_ring_icon"
+
+        android:layout_width="@dimen/dp_60"
+        android:layout_height="@dimen/dp_60"
+        android:src="@mipmap/ring_disconnect"/>
+
 
 </RelativeLayout>

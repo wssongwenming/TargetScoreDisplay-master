@@ -37,16 +37,11 @@ class DataHandler {
             public void run() {
                 while (true) {
                     try {
-                        boolean isShooting= Latte.getConfiguration(ConfigKeys.ISSHOOTING);
-                        if(!isShooting){
-                            linkedList.clear();
-                        }
                         if (linkedList.size() >= BATCH_SIZE) {
                             for (int i = 0; i < BATCH_SIZE; i++) {
 //                            sendData[i] = linkedList.removeFirst();
-                              String ringNumberOffset=linkedList.removeFirst();
-                              final List<String> ringNumber_OffsetList = Arrays.asList(ringNumberOffset.split(","));
-                              SoundPoolUtil.getInstance().play(ringNumber_OffsetList, 0) ;
+                                String ringNumberOffset=linkedList.removeFirst();
+                                final List<String> ringNumber_OffsetList = Arrays.asList(ringNumberOffset.split(","));
                                 Latte.getHandler().post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -55,6 +50,8 @@ class DataHandler {
 
                                     }
                                 });
+                                SoundPoolUtil.getInstance().play(ringNumber_OffsetList, 0) ;
+
                             }
                         }
                         Thread.sleep(50);
@@ -83,5 +80,8 @@ class DataHandler {
 
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+    }
+    public void clearData(){
+        linkedList.clear();
     }
 }

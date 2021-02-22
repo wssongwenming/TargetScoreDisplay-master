@@ -12,6 +12,8 @@ import android.os.StrictMode;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.AppCompatTextView;
 import android.text.TextUtils;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -56,6 +58,7 @@ import java.io.LineNumberReader;
 import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +67,7 @@ import java.util.Map;
 
 public class MainActivity extends ProxyActivity implements ISignListener,ILauncherListener,IMarkAttachListener {
     DataHandler dataHandler = DataHandler.getInstance();
-
+//
     public boolean isShooting=false;
     //资源列表,用于播放声音
     private Map<String, Integer> map ;
@@ -93,19 +96,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         Latte.getConfigurator().withActivity(this);
         dataHandler.setMainActivity(this);
         Latte.getConfigurator().withIsShooting(false);
-        //????可能引发问题
-//        Latte.getConfigurator().withLaunch_RelativeLayout((RelativeLayout)findViewById(R.id.layout_launch));
-//        Latte.getConfigurator().withDrawable(this.getResources().getDrawable(R.drawable.background));
-
-//        Handler uiHandler=new Handler() {
-//            public void handleMessage(String msg) {
-//                Resources resources=getResources();;//获取本地资源
-//                RelativeLayout relativeLayout=findViewById(R.id.layout_launch);
-//                relativeLayout.setBackground(resources.getDrawable(R.drawable.background));
-//
-//            }
-//        };
-//        Latte.getConfigurator().withUiHandler(uiHandler);
+        Latte.getConfigurator().withConnectRabbit(false);
 
 //        高版本不能在主线程中启动HTTP
         if (android.os.Build.VERSION.SDK_INT > 9) {
@@ -141,9 +132,10 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                         startWithPop(new LauncherDelegate());
                     } else if (dataType == DataType.SIGNINBYPASS.getCode()) {
                         //Toast.makeText((Context) Latte.getConfiguration(ConfigKeys.ACTIVITY), "ok", Toast.LENGTH_LONG).show();
+                        dataHandler.clearData();
                         startWithPop(SignInByPassDelegate.newInstance(message));
                     } else if (dataType == DataType.SIGNINBYFACE.getCode()) {
-                        Latte.getConfigurator().withIsShooting(false);
+
                         startWithPop(SignInByFaceRecDelegate.newInstance(message));
                     } else if (dataType == DataType.STARTSHOOTING.getCode()) {//不会直接走，
                         Latte.getConfigurator().withIsShooting(true);
@@ -226,6 +218,44 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
             }
         });
         init();
+        //启动一个线程监控当前rabbitmq的状态，实时修改消息队列连接状况图标，由于在activity中可以找到fragment中的元素，
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                            boolean connect_to_rabbitmq=Latte.getConfiguration(ConfigKeys.CONNECT_RABBIT);
+                            if(connect_to_rabbitmq)
+                            {
+                                Latte.getHandler().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        AppCompatImageView imageView=findViewById(R.id.tv_ring_icon);
+                                        imageView.setImageResource(R.drawable.ring_connect);
+                                    }
+                                });
+                            }
+                            else
+                            {
+                                Latte.getHandler().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        AppCompatImageView imageView=findViewById(R.id.tv_ring_icon);
+                                        imageView.setImageResource(R.drawable.ring_disconnect);
+                                    }
+                                });
+                            }
+
+                        Thread.sleep(10);
+                    } catch (InterruptedException ignore) {}
+                }
+            }
+
+        }).start();
+
+
     }
 
 //    @Override

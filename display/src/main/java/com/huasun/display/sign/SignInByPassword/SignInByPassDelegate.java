@@ -57,7 +57,7 @@ public class SignInByPassDelegate extends BottomItemDelegate {
             RestClient.builder()
                     //.url("http://192.168.1.3:8081/Web01_exec/UserLogin")
                     .url("http://192.168.1.3:8080/sys/trainee/login")
-                    //.url(Config.loginIp)
+//                    .url(Config.loginIp)
                     .params("id",mId.getText().toString())
                     .params("password",mPassword.getText().toString())
                     .success(new ISuccess() {
