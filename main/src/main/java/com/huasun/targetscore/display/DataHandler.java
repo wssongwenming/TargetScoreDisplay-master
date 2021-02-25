@@ -37,6 +37,7 @@ class DataHandler {
             public void run() {
                 while (true) {
                     try {
+
                         if (linkedList.size() >= BATCH_SIZE) {
                             for (int i = 0; i < BATCH_SIZE; i++) {
 //                            sendData[i] = linkedList.removeFirst();

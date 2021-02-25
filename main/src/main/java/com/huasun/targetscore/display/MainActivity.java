@@ -152,9 +152,11 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
                                     int size=increasedRingNumbersOffsetArray.size();
                                     final List<String> ringNumberlists = new ArrayList<>() ;
                                     for (int i=0;i<size;i++){//increasedRingNumbersOffsetArray的数据是：ringnumber，offset，ringnumber，offset
+                                        System.out.print("aaaaaaaaaa"+increasedRingNumbersOffsetArray);
                                         String ringnumber= String.valueOf((increasedRingNumbersOffsetArray.getInteger(i)));
                                         i++;
                                         String offset= String.valueOf((increasedRingNumbersOffsetArray.getString(i)));
+
 
                                         dataHandler.addData(ringnumber,offset);
                                         ringNumberlists.add(ringnumber);
@@ -478,6 +480,7 @@ public class MainActivity extends ProxyActivity implements ISignListener,ILaunch
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mac = getMacFromHardware();
         }
+        mac = mac.replace(":", "").toLowerCase();
         return mac;
     }
 

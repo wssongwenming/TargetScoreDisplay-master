@@ -1,6 +1,7 @@
 package com.huasun.display.sign.SignInByPassword;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatImageView;
@@ -15,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.config.ServerConfig;
+import com.huasun.core.app.ConfigKeys;
 import com.huasun.core.app.Latte;
 import com.huasun.core.delegates.LatteDelegate;
 import com.huasun.core.delegates.bottom.BottomItemDelegate;
@@ -56,14 +58,35 @@ public class SignInByPassDelegate extends BottomItemDelegate {
         if(checkForm()){
             RestClient.builder()
                     //.url("http://192.168.1.3:8081/Web01_exec/UserLogin")
-                    .url("http://192.168.1.3:8080/sys/trainee/login")
-//                    .url(Config.loginIp)
+//                    .url("http://192.168.1.3:8080/sys/trainee/login")
+                    .url(Config.loginIp)
                     .params("id",mId.getText().toString())
                     .params("password",mPassword.getText().toString())
                     .success(new ISuccess() {
                         @Override
                         public void onSuccess(String response) {
                             SignInHandler.onSignIn(response,mISignListener);
+                        }
+                    })
+                    .build()
+                    .post();
+        }
+    }
+
+    @OnClick(R2.id.btn_cancel)
+    void onClickError(){
+        if(checkForm()){
+            RestClient.builder()
+                    //.url("http://192.168.1.3:8081/Web01_exec/UserLogin")
+//                    .url("http://192.168.1.3:8080/sys/trainee/login")
+                    .url(Config.identityErrorIp)
+                    .params("id",mId.getText().toString())
+                    .params("password",mPassword.getText().toString())
+                    .success(new ISuccess() {
+                        @Override
+                        public void onSuccess(String response) {
+//                            SignInHandler.onSignIn(response,mISignListener);
+                            Toast.makeText((Context)Latte.getConfiguration(ConfigKeys.ACTIVITY),"已向指挥台提交信息",Toast.LENGTH_LONG).show();
                         }
                     })
                     .build()
@@ -90,14 +113,14 @@ public class SignInByPassDelegate extends BottomItemDelegate {
                 final int id = data.getInteger("userId");//编号
                 final String name = data.getString("name");
                 final String department = data.getString("department");
-                final String password = data.getString("password");//登陆者的密码，一般为空，有时不需输入时可以输入默认的密码
+                final String idNo = data.getString("idNo");//登陆者的密码，一般为空，有时不需输入时可以输入默认的密码
                 final String photopath=ServerConfig.API_SERVER+data.getString("photopath");//登陆者的图片路径
 
                 System.out.print("path======="+photopath);
                 mId.setText(id+"");
                 mName.setText(name);
                 mDepartment.setText(department);
-                mPassword.setText(password);
+                mPassword.setText(idNo);
                 Glide.with(getContext())
                         .load(photopath)
                         .apply(REQUEST_OPTIONS)

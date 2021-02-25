@@ -269,7 +269,6 @@
                             android:gravity="center"
                             android:textSize="@dimen/sp_48"
                             android:textStyle="bold"
-
                             android:textColor="@color/lightgreen"
                             android:text="10"/>
                         </android.support.v7.widget.LinearLayoutCompat>

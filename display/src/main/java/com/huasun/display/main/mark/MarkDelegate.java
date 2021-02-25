@@ -81,12 +81,6 @@ public class MarkDelegate extends BottomItemDelegate {
     private String gun;//枪械种类
     private String shootingPose;//射击姿势
     private String shootingDistance;//射击距离
-    private int countof10=0;//十环数目
-    private int countof9=0;
-    private int countof8=0;
-    private int countof7=0;
-    private int countof6=0;
-    private int countof5=0;
     private int[] ringNumbers=new int[6];
     private int countofMiss=0;//脱靶数目
     private int countofNotMisss=0;
@@ -287,8 +281,8 @@ public class MarkDelegate extends BottomItemDelegate {
 //        mGun.setInputType(InputType.TYPE_NULL);
         gun=commandJson.getString("shooting_gun");
         name=commandJson.getString("name");
-        shootingPose=commandJson.getString("shooting_pose");
-        shootingDistance=commandJson.getString("shooting_distance");
+        shootingPose=commandJson.getString("shootingPose");
+        shootingDistance=commandJson.getString("shootingDistance");
         bulletNumber=commandJson.getInteger("bullet_count");
 
         mBullet.setText(commandJson.getInteger("bullet_count")+"");//将int　转为CharSequence
